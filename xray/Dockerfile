@@ -5,8 +5,8 @@
 # https://github.com/teddysun/across/blob/master/docker/xray/Dockerfile
 
 # syntax=docker/dockerfile:latest
-# FROM --platform=$BUILDPLATFORM golang:latest AS build
-FROM --platform=$BUILDPLATFORM public.ecr.aws/docker/library/golang:latest AS build
+FROM --platform=$BUILDPLATFORM golang:latest AS build
+# FROM --platform=$BUILDPLATFORM public.ecr.aws/docker/library/golang:latest AS build
 
 # Build xray-core
 WORKDIR /src
@@ -17,7 +17,8 @@ RUN  git clone --branch $VERSION https://github.com/XTLS/xray-core.git /src \
   && GOOS=$TARGETOS GOARCH=$TARGETARCH CGO_ENABLED=0 go build -o xray -trimpath -ldflags "-s -w -buildid=" ./main
 
 # Build finally image
-FROM public.ecr.aws/docker/library/alpine:latest
+FROM alpine:latest
+# FROM public.ecr.aws/docker/library/alpine:latest
 
 COPY --from=build --chown=0:0 --chmod=755 /src/xray /usr/local/bin/xray
 
