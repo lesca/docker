@@ -1,0 +1,154 @@
+# Reference: Multi-platform image with GitHub Actions
+# https://docs.docker.com/build/ci/github-actions/multi-platform/
+# https://docs.docker.com/build/ci/github-actions/push-multi-registries/
+
+name: docker-image-xray
+concurrency: deploy-${{ github.workflow }}
+
+on: 
+  push:
+    branches:
+      - '*'
+    paths:
+      - xray/Dockerfile
+      - .github/workflows/xray-docker.yaml
+  workflow_dispatch:
+  schedule:
+    - cron: '21 0 * * *' # At 21:00 every day
+
+env:
+  PACKAGE_NAME: xray
+  IMAGE_CONTEXT: ./xray
+  REGISTRY_IMAGE: ${{ github.repository_owner }}/xray
+  BUILD_PLATFORMS: |
+    linux/amd64
+    linux/386
+    linux/arm64
+    linux/arm/v7
+    linux/arm/v6
+    linux/riscv64
+    linux/ppc64le
+    linux/s390x
+
+jobs:
+  check-updates:
+    runs-on: ubuntu-latest
+    outputs:
+      remote_version: ${{ steps.remote_version.outputs.remote_version }}
+      local_version: ${{ steps.local_version.outputs.local_version }}
+      should_build: ${{ steps.should_build.outputs.should_build }}
+    steps:
+      # 1. 获取远程版本
+      - name: Get remote version
+        id: remote_version
+        run: |
+          REMOTE_REPO="XTLS/Xray-core" 
+          # 使用 GitHub CLI 或 curl/jq 获取最新 Release Tag
+          LATEST_TAG=$(curl -s "https://api.github.com/repos/${REMOTE_REPO}/releases/latest" | jq -r .tag_name)
+          
+          if [ "$LATEST_TAG" = "null" ]; then
+            echo "::error::Could not find latest release tag."
+            exit 1
+          fi
+          
+          echo "Remote Version: $LATEST_TAG"
+          echo "remote_version=$LATEST_TAG" >> $GITHUB_OUTPUT
+
+      # 2. 获取本地版本
+      - name: Get local version
+        id: local_version
+        run: |
+          # 使用 curl 和 jq 查询 Docker Hub API
+          DOCKERHUB_TAG_1=$(curl -s "https://hub.docker.com/v2/repositories/${{ env.REGISTRY_IMAGE }}/tags/" | jq -r '.results[0].name')
+          DOCKERHUB_TAG_2=$(curl -s "https://hub.docker.com/v2/repositories/${{ env.REGISTRY_IMAGE }}/tags/" | jq -r '.results[1].name')
+
+          # 排除掉 latest 标签
+          if [ "$DOCKERHUB_TAG_2" == "latest" ]; then
+             DOCKERHUB_TAG=$DOCKERHUB_TAG_1
+          elif [ "$DOCKERHUB_TAG_1" == "latest" ]; then
+             DOCKERHUB_TAG=$DOCKERHUB_TAG_2
+          fi
+
+          if [ -z "$DOCKERHUB_TAG" ] || [ "$DOCKERHUB_TAG" = "null" ]; then
+             # 如果没有找到任何 Tag (可能是新镜像或 API 失败)，我们可以假定需要构建
+             echo "Warning: Could not reliably determine Docker Hub latest tag. Assuming build required."
+             LATEST_DOCKER_TAG="v0.0.0" # 设置一个低版本，确保下一步触发
+          else
+             LATEST_DOCKER_TAG=$DOCKERHUB_TAG
+          fi
+          
+          echo "Local Version: $LATEST_DOCKER_TAG"
+          echo "local_version=$LATEST_DOCKER_TAG" >> $GITHUB_OUTPUT
+
+      # 3. 判断是否需要触发后续操作
+      - name: Check for New Release
+        id: should_build
+        run: |
+          if [ "${{ steps.remote_version.outputs.remote_version }}" != "${{ steps.local_version.outputs.local_version }}" ]; then
+            echo "New release found! Remote version: ${{ steps.remote_version.outputs.remote_version }}, Local version: ${{ steps.local_version.outputs.local_version }}"
+            echo "should_build=true" >> $GITHUB_OUTPUT
+          else
+            echo "No new release found! Remote version: ${{ steps.remote_version.outputs.remote_version }}, Local version: ${{ steps.local_version.outputs.local_version }}"
+            echo "should_build=false" >> $GITHUB_OUTPUT
+          fi
+
+  build-images:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read 
+      packages: write
+    needs:
+      - check-updates
+    if: ${{ needs.check-updates.outputs.should_build == 'true' }}
+    steps:
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY_IMAGE }}
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # - name: docker pull without login
+      #   run: |
+      #     for PLATFORM in $BUILD_PLATFORMS; do
+      #       docker pull --platform=$PLATFORM golang:latest
+      #       docker pull --platform=$PLATFORM alpine:latest
+      #     done
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build images
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          platforms: ${{ env.BUILD_PLATFORMS }}
+          context: ${{ env.IMAGE_CONTEXT }}
+          file: ${{ env.IMAGE_CONTEXT }}/Dockerfile
+          labels: ${{ steps.meta.outputs.labels }}
+          tags: |
+            ${{ env.REGISTRY_IMAGE }}:latest
+            ${{ env.REGISTRY_IMAGE }}:${{ needs.check-updates.outputs.remote_version }}
+            ghcr.io/${{ env.PACKAGE_NAME }}:latest
+            ghcr.io/${{ env.PACKAGE_NAME }}:${{ needs.check-updates.outputs.remote_version }}
+          push: true
+          build-args: |
+            VERSION=${{ needs.check-updates.outputs.remote_version }}
