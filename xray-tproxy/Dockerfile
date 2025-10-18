@@ -1,5 +1,5 @@
 ARG VERSION
-FROM --platform=$BUILDPLATFORM ghcr.io/lesca/docker:${VERSION}
+FROM --platform=$BUILDPLATFORM ghcr.io/lesca/xray:${VERSION}
 
 # Build xray-core
 WORKDIR /src

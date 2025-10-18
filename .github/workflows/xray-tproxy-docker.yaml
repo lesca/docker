@@ -148,8 +148,8 @@ jobs:
           tags: |
             ${{ env.REGISTRY_IMAGE }}:latest
             ${{ env.REGISTRY_IMAGE }}:${{ needs.check-updates.outputs.remote_version }}
-            ghcr.io/${{ github.repository }}:latest
-            ghcr.io/${{ github.repository }}:${{ needs.check-updates.outputs.remote_version }}
+            ghcr.io/${{ env.REGISTRY_IMAGE }}:latest
+            ghcr.io/${{ env.REGISTRY_IMAGE }}:${{ needs.check-updates.outputs.remote_version }}
           push: true
           build-args: |
             VERSION=${{ needs.check-updates.outputs.remote_version }}
