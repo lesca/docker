@@ -17,7 +17,6 @@ on:
     - cron: '21 0 * * *' # At 21:00 every day
 
 env:
-  PACKAGE_NAME: xray
   IMAGE_CONTEXT: ./xray
   REGISTRY_IMAGE: ${{ github.repository_owner }}/xray
   BUILD_PLATFORMS: |
@@ -147,8 +146,8 @@ jobs:
           tags: |
             ${{ env.REGISTRY_IMAGE }}:latest
             ${{ env.REGISTRY_IMAGE }}:${{ needs.check-updates.outputs.remote_version }}
-            ghcr.io/${{ env.PACKAGE_NAME }}:latest
-            ghcr.io/${{ env.PACKAGE_NAME }}:${{ needs.check-updates.outputs.remote_version }}
+            ghcr.io/${{ env.REGISTRY_IMAGE }}:latest
+            ghcr.io/${{ env.REGISTRY_IMAGE }}:${{ needs.check-updates.outputs.remote_version }}
           push: true
           build-args: |
             VERSION=${{ needs.check-updates.outputs.remote_version }}
