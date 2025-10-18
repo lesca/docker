@@ -38,7 +38,7 @@ For the **outbound** settings, the [DNS redirection](#dns-redirection) is requir
 
 Here is an example of **DNS outbound** in xray config:
 
-```json
+```jsonc
 {
   "outbounds": [
     // your outbound to remote server
