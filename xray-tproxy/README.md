@@ -2,7 +2,7 @@
 ## What it does?
 
 * A [XRAY](https://github.com/XTLS/Xray-core) docker image with tproxy support.
-* A built-in DNS service. All DNS requests are re-directed to xray to prevent DNS leaking.
+* A built-in DNS service. All DNS requests are re-directed to xray to [prevent DNS leaking](#about-dns).
 
 ## How to use it?
 
@@ -130,10 +130,9 @@ All the environment variables that you can set in `docker-compose.yaml` file:
 
 ## Other topics
 
-### DNS redirection
+### About DNS
 
-* `xray-tproxy` container doesn't serve a DNS service. 
-* To protect your DNS requests from leaking, use a **DNS outbound** in xray configuration to make it redirects all requests via proxy.
-* In this way, set your devices' DNS server to `114.114.114.114` or `8.8.8.8` has the same result. 
-* However, don't use your LAN DNS server, e.g. `192.168.1.1`. The DNS traffic doesn't route to `xray-tproxy`, and thus is not protected. 
+* `xray-tproxy` container uses `dnsmasq` to provide DNS service.
+* All the DNS requests are re-directed to `xray` via `nftables`.
+* Thus, you can safely speicify the IP address of `xray-tproxy` container on your client devices (Phone, PC, etc).
 
