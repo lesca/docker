@@ -2,24 +2,28 @@
 ## What it does?
 
 * A [XRAY](https://github.com/XTLS/Xray-core) docker image with tproxy support.
+* A built-in DNS service. All DNS requests are re-directed to xray to prevent DNS leaking.
 
 ## How to use it?
 
-### 1. Setup `xray` config
-1. Setup `xray` inbound
+### 1. Setup `xray` inbound
 
 `xray` should use a paticular `tproxy` inbound to receive traffice routed from within the container.
 
 ```jsonc
 {
   "inbounds": [
-    // tproxy rule
+    // tproxy inbound rule
     {
-      "port": 12345,  // this port must match `XRAY_INBOUND_PORT` env variable
+      "port": 12345,  // must match XRAY_INBOUND_PORT in docker-compose
       "protocol": "dokodemo-door",
       "settings": {
         "network": "tcp,udp",
         "followRedirect": true
+      },
+      "sniffing": {
+        "enabled": true,
+        "destOverride": ["http", "tls"]
       },
       "streamSettings": {
         "sockopt": {
@@ -32,65 +36,6 @@
 }
 ```
 
-2. Setup `xray` outbound
-
-For the **outbound** settings, the [DNS redirection](#dns-redirection) is required in case of DNS leak.
-
-Here is an example of **DNS outbound** in xray config:
-
-```jsonc
-{
-  "outbounds": [
-    // your outbound to remote server
-    {
-      "tag": "proxy",
-      // ...
-    },
-
-    // DNS outbound via proxy
-    {
-      "tag": "out-dns",
-      "protocol": "dns",
-      "settings": {
-        "address": "8.8.8.8"
-      },
-      "proxySettings": {
-        "tag": "proxy"
-      }
-    },
-
-    {
-      "tag": "direct",
-      "protocol": "freedom"
-    },
-    {
-      "tag": "block",
-      "protocol": "blackhole"
-    }
-  ]
-}
-```
-
-3. Setup `xray` routing
-
-This is routing rules is for [DNS redirection](#dns-redirection) in case of DNS leak.
-
-```jsonc
-{
-  "routing": {
-    "domainStrategy": "AsIs",
-    "rules": [
-      // DNS redirection
-      {
-        "type": "field",
-        "port": 53,
-        "outboundTag": "out-dns"
-      },
-      // other rules ...
-    ]
-  }
-}
-```
 
 ### 2. Run `xray-tproxy` with docker-compose
 
@@ -111,8 +56,10 @@ services:
       tproxyvlan:
         ipv4_address: 192.168.2.2
     environment:
-      XRAY_INBOUND_PORT: "12345" # must match inbound port to xray
+      ALLOW_QUIC: "false" # it's recommended to block QUIC (UDP/443)
+      XRAY_INBOUND_PORT: "12345" # must match inbound port in xray config
       LOCAL_DNS: "114.114.114.114"
+      REMOTE_DNS: "8.8.8.8 1.1.1.1" # space separated dnsmasq servers
       RESERVED_IPS: "0.0.0.0/8 10.0.0.0/8 127.0.0.0/8 169.254.0.0/16 172.16.0.0/12 192.168.0.0/16 224.0.0.0/4 240.0.0.0/4"
     # Using config folder in this case
     volumes:
@@ -142,36 +89,33 @@ and for the first time, run:
 docker-compose up
 ```
 
-You can see the logs. If everything goes well, press `Ctrl-C` to close the log. The service still runs in the background.
-
-You can also use `docker-compose logs -f` to see the logs in real time.
-
-If everything works, you can run command below without logs:
-
-```bash
-docker-comopse up -d 
-```
 
 ### (Optional) Run `ash` to debug
 
-You can run `docker exec -it tproxy ash` to run `ash` in the container.
-
-If you discover the image without `xray` running and firewall setup, you can use commands below to debug:
+You can run this command to run `ash` in the container.
 
 ```bash
-docker run --rm -it --entrypoint ash --cap-add=NET_ADMIN -v $PWD/xray-tproxy:/src lesca/xray-tproxy:latest
+docker exec -it tproxy ash
+``` 
+
+If you want to discover the image without the default entrypoint, you can use commands below to debug:
+
+```bash
+docker run --rm -it --entrypoint ash --cap-add=NET_ADMIN lesca/xray-tproxy:latest
 ```
 
-* `--entrypoint`: override the default entrypoint to `ash`
-* `--cap-add=NET_ADMIN`: run with `NET_ADMIN` capability to use `iptables` or `nftables`
-* `-v $PWD/xray-tproxy:/src`: map the current directory to `/src` in the container.
 
 ## Environment Viariables
 
 All the environment variables that you can set in `docker-compose.yaml` file:
 
+* `ALLOW_QUIC`: Allow QUIC (UDP/443) traffic.
+  * Default: false
 * `LOCAL_DNS`: Local DNS server to be used for Xray first dialing. It has nothing to do with Xray's internal DNS.
   * Default: 114.114.114.114
+* `REMOTE_DNS`: Space separated dnsmasq servers.
+  * Default: `1.1.1.1 8.8.8.8`
+  * You can also use something like this: `REMOTE_DNS="1.1.1.1 8.8.8.8 /qq.com/114.114.114.114"`
 * `XRAY_INBOUND_PORT`: Xray works in TPROXY mode on this port. The port **must match** the inbound port of xray config.
   * Default: 12345
 * `XRAY_INBOUND_MARK`: The fwmark to be used for Xray inbound packets.

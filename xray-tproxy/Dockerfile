@@ -6,6 +6,6 @@ WORKDIR /src
 COPY . . 
 ARG TARGETOS
 ARG TARGETARCH
-RUN  apk update && apk add --no-cache iptables nftables
+RUN  apk update && apk add --no-cache iptables nftables dnsmasq
 
 ENTRYPOINT ["/src/entrypoint.sh"]

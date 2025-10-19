@@ -10,6 +10,7 @@ on:
       - '*'
     paths:
       - xray-tproxy/Dockerfile
+      - xray-tproxy/entrypoint.sh
       - .github/workflows/xray-tproxy-docker.yaml
   workflow_dispatch:
   schedule:
