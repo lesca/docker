@@ -20,7 +20,8 @@ setup_nftables() {
     nft flush ruleset
     set -e # exit on error
 
-    cat >> "$MAIN_NFT" <<EOF
+    # Start of main.nft
+    cat > "$MAIN_NFT" <<EOF
 # 1. 创建表
 table ip xray {
 
@@ -37,7 +38,17 @@ table ip xray {
     # priority mangle = -150
     chain XRAY {
         type filter hook prerouting priority mangle; policy accept;
+EOF
 
+    # Add QUIC rule if needed
+    if [ "$ALLOW_QUIC" = "false" ]; then
+        cat >> "$MAIN_NFT" <<EOF
+        udp dport 443 reject
+EOF
+    fi
+
+    # Add the rest of the XRAY chain
+    cat >> "$MAIN_NFT" <<EOF
         # --- 匹配/跳过规则 (RETURN) ---
 
         # 不处理 SSH 连接
@@ -53,25 +64,15 @@ table ip xray {
         ip protocol udp tproxy to 127.0.0.1:$XRAY_INBOUND_PORT meta mark set $XRAY_INBOUND_MARK
     }
 
-		# 4. OUTPUT 链
-		# 用于将请求回流到 xray
+    # 4. OUTPUT 链
+    # 用于将请求回流到 xray
     chain OUTPUT {
         type route hook output priority mangle; policy accept;
-				# 将 dnsmasq(100:101) 的 DNS 请求回流到 xray
+        # 将 dnsmasq(100:101) 的 DNS 请求回流到 xray
         meta skuid 100 meta mark set $XRAY_INBOUND_MARK
     }
 }
 EOF
-
-if [ "$ALLOW_QUIC" = "false" ]; then
-    cat >> "$MAIN_NFT" <<EOF
-table ip xray {
-  chain PRE_XRAY {
-    udp dport 443 reject
-  }
-}
-EOF
-fi
 
     nft -f "$MAIN_NFT"
     rm "$MAIN_NFT"
@@ -87,19 +88,6 @@ setup_dns() {
     for DNS in $REMOTE_DNS; do
         echo "server=$DNS" >> "$MAIN_DNS"
     done
-
-
-    # setup dnsmasq
-    cat >> "$MAIN_DNS" <<EOF
-user=dnsmasq
-group=dnsmasq
-port=53
-domain-needed
-no-resolv
-no-poll
-no-hosts
-conf-dir=/etc/dnsmasq.d/,*.conf
-EOF
 
     # move to /etc
     mv "$MAIN_DNS" /etc/dnsmasq.conf
