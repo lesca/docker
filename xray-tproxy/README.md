@@ -105,8 +105,6 @@ docker run --rm -it --entrypoint ash --cap-add=NET_ADMIN lesca/xray-tproxy:lates
 
 All the environment variables that you can set in `docker-compose.yaml` file:
 
-* `ALLOW_QUIC`: Allow QUIC (UDP/443) traffic.
-  * Default: false
 * `LOCAL_DNS`: Local DNS server to be used for Xray first dialing. It has nothing to do with Xray's internal DNS.
   * Default: 114.114.114.114
 * `REMOTE_DNS`: Space separated dnsmasq servers.

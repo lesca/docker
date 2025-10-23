@@ -5,7 +5,6 @@
 # configs
 ENFORCE_LAN_SRC_IP4=${ENFORCE_LAN_SRC_IP4:-""}
 ENFORCE_LAN_SRC_IP6=${ENFORCE_LAN_SRC_IP6:-""}
-ALLOW_QUIC=${ALLOW_QUIC:-"false"}
 LOCAL_DNS=${LOCAL_DNS:-"114.114.114.114"}
 REMOTE_DNS=${REMOTE_DNS:-"1.1.1.1 8.8.8.8"}
 XRAY_INBOUND_PORT=${XRAY_INBOUND_PORT:-"12345"}
@@ -56,13 +55,6 @@ EOF
     if [ "$ENFORCE_LAN_SRC_IP6" != "" ]; then
         cat >> "$MAIN_NFT" <<EOF
         ip6 saddr != $ENFORCE_LAN_SRC_IP6 return
-EOF
-    fi
-
-    # Add QUIC rule if needed
-    if [ "$ALLOW_QUIC" = "false" ]; then
-        cat >> "$MAIN_NFT" <<EOF
-        udp dport 443 reject
 EOF
     fi
 
