@@ -3,14 +3,20 @@
 # # Reference: https://github.com/scenery/mihomo-tproxy-docker
 
 # configs
+ENFORCE_LAN_SRC_IP4=${ENFORCE_LAN_SRC_IP4:-""}
+ENFORCE_LAN_SRC_IP6=${ENFORCE_LAN_SRC_IP6:-""}
 ALLOW_QUIC=${ALLOW_QUIC:-"false"}
 LOCAL_DNS=${LOCAL_DNS:-"114.114.114.114"}
 REMOTE_DNS=${REMOTE_DNS:-"1.1.1.1 8.8.8.8"}
 XRAY_INBOUND_PORT=${XRAY_INBOUND_PORT:-"12345"}
 XRAY_INBOUND_MARK=${XRAY_INBOUND_MARK:-"0x1"}
 ROUTE_TABLE=${ROUTE_TABLE:-"100"}
-RESERVED_IPS=${RESERVED_IPS:-"0.0.0.0/8 10.0.0.0/8 127.0.0.0/8 169.254.0.0/16 172.16.0.0/12 192.168.0.0/16 224.0.0.0/4 240.0.0.0/4"}
-NFT_RESERVED_IPS="{ $(echo $RESERVED_IPS | sed 's/ /, /g') }"
+
+# reserved ip ranges
+RESERVED_IP4=${RESERVED_IP4:-"0.0.0.0/8 10.0.0.0/8 127.0.0.0/8 169.254.0.0/16 172.16.0.0/12 192.168.0.0/16 224.0.0.0/4 240.0.0.0/4"}
+RESERVED_IP6=${RESERVED_IP6:-"::1/128 fc00::/7 fe80::/10"}
+NFT_RESERVED_IP4="{ $(echo $RESERVED_IP4 | sed 's/ /, /g') }"
+NFT_RESERVED_IP6="{ $(echo $RESERVED_IP6 | sed 's/ /, /g') }"
 
 # paths
 MAIN_NFT="/tmp/main.nft"
@@ -22,23 +28,36 @@ setup_nftables() {
 
     # Start of main.nft
     cat > "$MAIN_NFT" <<EOF
-# 1. 创建表
-table ip xray {
+table inet xray {
 
-    # 2. PRE_XRAY 链 (用于 NOTRACK) 
+    # PRE_XRAY 链 (用于 NOTRACK) 
     # 确保在连接跟踪之前处理 (priority raw = -300)
     chain PRE_XRAY {
         type filter hook prerouting priority raw; policy accept;
 
-        # 忽略代理的连接跟踪（对应 iptables -t raw -A PREROUTING -m mark --mark 1 -j NOTRACK）
+        # 忽略代理的连接跟踪 (对应 iptables -t raw -A PREROUTING -m mark --mark 1 -j NOTRACK)
         meta mark == $XRAY_INBOUND_MARK notrack
     }
 
-    # 3. XRAY 链 (用于 TPROXY 规则)
+    # XRAY 链 (用于 TPROXY 规则)
     # priority mangle = -150
     chain XRAY {
         type filter hook prerouting priority mangle; policy accept;
 EOF
+
+    # Enforce src ip (ipv4) must be in LAN
+    if [ "$ENFORCE_LAN_SRC_IP4" != "" ]; then
+        cat >> "$MAIN_NFT" <<EOF
+        ip saddr != $ENFORCE_LAN_SRC_IP4 return
+EOF
+    fi
+
+    # Enforce src ip (ipv6) must be in LAN
+    if [ "$ENFORCE_LAN_SRC_IP6" != "" ]; then
+        cat >> "$MAIN_NFT" <<EOF
+        ip6 saddr != $ENFORCE_LAN_SRC_IP6 return
+EOF
+    fi
 
     # Add QUIC rule if needed
     if [ "$ALLOW_QUIC" = "false" ]; then
@@ -55,13 +74,17 @@ EOF
         tcp dport 22 return
 
         # 不处理目标地址是局域网的流量 (私有网络)
-        ip daddr $NFT_RESERVED_IPS return
+        ip daddr $NFT_RESERVED_IP4 return
+        ip6 daddr $NFT_RESERVED_IP6 return
 
         # --- TPROXY 转发规则 ---
 
-        # TCP UDP 流量: 标记 1 并重定向到 XRAY_INBOUND_PORT
-        ip protocol tcp tproxy to 127.0.0.1:$XRAY_INBOUND_PORT meta mark set $XRAY_INBOUND_MARK
-        ip protocol udp tproxy to 127.0.0.1:$XRAY_INBOUND_PORT meta mark set $XRAY_INBOUND_MARK
+        # 对 IPv4 的 TCP/UDP 流量进行 TPROXY (使用 meta nfproto)
+        meta nfproto ipv4 meta l4proto { tcp, udp } tproxy ip to 127.0.0.1:12345 meta mark set $XRAY_INBOUND_MARK
+
+        # 对 IPv6 的 TCP/UDP 流量进行 TPROXY (使用 meta nfproto)
+        meta nfproto ipv6 meta l4proto { tcp, udp } tproxy ip6 to [::1]:12345 meta mark set $XRAY_INBOUND_MARK
+
     }
 
     # 4. OUTPUT 链

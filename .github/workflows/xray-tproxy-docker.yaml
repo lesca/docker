@@ -110,13 +110,12 @@ jobs:
         linux/s390x
     needs:
       - check-updates
-    if: ${{ needs.check-updates.outputs.should_build == 'true' }}
+    if: ${{ needs.check-updates.outputs.should_build == 'true' }} || || github.event_name == 'workflow_dispatch'
     steps:
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY_IMAGE }}
+      - name: Prepare
+        run: |
+          echo "TODAY=$(date +'%Y%m%d')" >> $GITHUB_ENV
+          echo "TODAY: $TODAY"
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -150,9 +149,9 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           tags: |
             ${{ env.REGISTRY_IMAGE }}:latest
-            ${{ env.REGISTRY_IMAGE }}:${{ needs.check-updates.outputs.remote_version }}
+            ${{ env.REGISTRY_IMAGE }}:${{ needs.check-updates.outputs.remote_version }}-${{ env.TODAY }}
             ghcr.io/${{ env.REGISTRY_IMAGE }}:latest
-            ghcr.io/${{ env.REGISTRY_IMAGE }}:${{ needs.check-updates.outputs.remote_version }}
+            ghcr.io/${{ env.REGISTRY_IMAGE }}:${{ needs.check-updates.outputs.remote_version }}-${{ env.TODAY }}
           push: true
           build-args: |
             VERSION=${{ needs.check-updates.outputs.remote_version }}

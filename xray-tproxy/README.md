@@ -122,9 +122,16 @@ All the environment variables that you can set in `docker-compose.yaml` file:
   * Default: 0x1
 * `ROUTE_TABLE`: Specify a route table number. All packets with fwmark 0x1 (default) will be routed to this table.
   * Default: 100
-* `RESERVED_IPS`: Reversed IP ranges. If destination IP is in these ranges, the packets will not be proxyed.
+* `RESERVED_IP4`: Reversed IPv4 ranges. If destination IP is in these ranges, the packets will not be proxyed.
   * Default: "0.0.0.0/8 10.0.0.0/8 127.0.0.0/8 169.254.0.0/16 172.16.0.0/12 192.168.0.0/16 224.0.0.0/4 240.0.0.0/4"
   * Removing `172.16.0.0/12` makes it possible to access remote docker network via proxy.
+* `RESERVED_IP6`: Reversed IPv6 ranges. If destination IP is in these ranges, the packets will not be proxyed.
+  * Default: "::1/128 fc00::/7 fe80::/10"
+* `ENFORCE_LAN_SRC_IP4` and `ENFORCE_LAN_SRC_IP6`: Enforce source IP must be in LAN.
+  * Default: "" (empty)
+  * Example: `ENFORCE_LAN_SRC_IP4="192.168.2.0/24"`
+  * This enforce `xray-tproxy` only accept traffic from within the network `192.168.2.0/24`.
+  * This is useful if your box has a public IP address, and this avoids access from your WAN port neighbors.
 
 > Note: Set these environment variables will override the default ones.
 
@@ -135,4 +142,3 @@ All the environment variables that you can set in `docker-compose.yaml` file:
 * `xray-tproxy` container uses `dnsmasq` to provide DNS service.
 * All the DNS requests are re-directed to `xray` via `nftables`.
 * Thus, you can safely speicify the IP address of `xray-tproxy` container on your client devices (Phone, PC, etc).
-
