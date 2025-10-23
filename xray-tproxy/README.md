@@ -56,11 +56,7 @@ services:
       tproxyvlan:
         ipv4_address: 192.168.2.2
     environment:
-      ALLOW_QUIC: "false" # it's recommended to block QUIC (UDP/443)
       XRAY_INBOUND_PORT: "12345" # must match inbound port in xray config
-      LOCAL_DNS: "114.114.114.114"
-      REMOTE_DNS: "8.8.8.8 1.1.1.1" # space separated dnsmasq servers
-      RESERVED_IP4: "0.0.0.0/8 10.0.0.0/8 127.0.0.0/8 169.254.0.0/16 172.16.0.0/12 192.168.0.0/16 224.0.0.0/4 240.0.0.0/4"
     # Using config folder in this case
     volumes:
       - ./config:/etc/xray/config
