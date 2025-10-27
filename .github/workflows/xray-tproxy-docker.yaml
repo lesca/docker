@@ -14,7 +14,7 @@ on:
       - .github/workflows/xray-tproxy-docker.yaml
   workflow_dispatch:
   schedule:
-    - cron: ' 0 22 * * *'
+    - cron: ' 0 22 * * 6'
 
 env:
   IMAGE_CONTEXT: ./xray-tproxy

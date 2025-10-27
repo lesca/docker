@@ -14,7 +14,7 @@ on:
       - .github/workflows/xray-docker.yaml
   workflow_dispatch:
   schedule:
-    - cron: ' 0 21 * * *'
+    - cron: ' 0 21 * * 5'
 
 env:
   IMAGE_CONTEXT: ./xray
