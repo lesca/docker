@@ -3,13 +3,14 @@
 # # Reference: https://github.com/scenery/mihomo-tproxy-docker
 
 # configs
-ENFORCE_LAN_SRC_IP4=${ENFORCE_LAN_SRC_IP4:-""}
-ENFORCE_LAN_SRC_IP6=${ENFORCE_LAN_SRC_IP6:-""}
+DNS_CLIENT_SUBNET=${DNS_CLIENT_SUBNET:-"114.114.114.0/24"}
 LOCAL_DNS=${LOCAL_DNS:-"114.114.114.114"}
 REMOTE_DNS=${REMOTE_DNS:-"1.1.1.1 8.8.8.8"}
 XRAY_INBOUND_PORT=${XRAY_INBOUND_PORT:-"12345"}
 XRAY_INBOUND_MARK=${XRAY_INBOUND_MARK:-"0x1"}
 ROUTE_TABLE=${ROUTE_TABLE:-"100"}
+ENFORCE_LAN_SRC_IP4=${ENFORCE_LAN_SRC_IP4:-""}
+ENFORCE_LAN_SRC_IP6=${ENFORCE_LAN_SRC_IP6:-""}
 
 # reserved ip ranges
 RESERVED_IP4=${RESERVED_IP4:-"0.0.0.0/8 10.0.0.0/8 127.0.0.0/8 169.254.0.0/16 172.16.0.0/12 192.168.0.0/16 224.0.0.0/4 240.0.0.0/4"}
@@ -19,7 +20,7 @@ NFT_RESERVED_IP6="{ $(echo $RESERVED_IP6 | sed 's/ /, /g') }"
 
 # paths
 MAIN_NFT="/tmp/main.nft"
-MAIN_DNS="/tmp/dnsmasq.conf"
+MAIN_DNS="/tmp/dns.conf"
 
 setup_nftables() {
     nft flush ruleset
@@ -98,6 +99,22 @@ setup_dns() {
     
     # set local dns
     echo "nameserver $LOCAL_DNS" > /etc/resolv.conf
+
+    # show dns
+    echo "Local DNS:  $LOCAL_DNS"
+    echo "Remote DNS: $REMOTE_DNS"
+
+    # dns conf
+    cat >> $MAIN_DNS <<EOF
+# https://thekelleys.org.uk/dnsmasq/docs/dnsmasq-man.html
+no-resolv
+no-poll
+edns-packet-max=4096
+add-subnet=$DNS_CLIENT_SUBNET
+cache-size=10000
+max-cache-ttl=3600
+min-cache-ttl=300
+EOF
 
     # add dns servers
     for DNS in $REMOTE_DNS; do

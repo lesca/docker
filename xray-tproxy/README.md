@@ -107,7 +107,7 @@ All the environment variables that you can set in `docker-compose.yaml` file:
 
 * `LOCAL_DNS`: Local DNS server to be used for Xray first dialing. It has nothing to do with Xray's internal DNS.
   * Default: 114.114.114.114
-* `REMOTE_DNS`: Space separated dnsmasq servers.
+* `REMOTE_DNS`: Space separated dns servers.
   * Default: `1.1.1.1 8.8.8.8`
   * You can also use something like this: `REMOTE_DNS="1.1.1.1 8.8.8.8 /qq.com/114.114.114.114"`
 * `XRAY_INBOUND_PORT`: Xray works in TPROXY mode on this port. The port **must match** the inbound port of xray config.
@@ -126,6 +126,8 @@ All the environment variables that you can set in `docker-compose.yaml` file:
   * Example: `ENFORCE_LAN_SRC_IP4="192.168.2.0/24"`
   * This enforce `xray-tproxy` only accept traffic from within the network `192.168.2.0/24`.
   * This is useful if your box has a public IP address, and this avoids access from your WAN port neighbors.
+* `DNS_CLIENT_SUBNET`: The client subnet to be used for dns queries.
+  * Default: "114.114.114.0/24"
 
 > Note: Set these environment variables will override the default ones.
 
