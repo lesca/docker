@@ -13,8 +13,6 @@ on:
       - xray-tproxy/entrypoint.sh
       - .github/workflows/xray-tproxy-docker.yaml
   workflow_dispatch:
-  schedule:
-    - cron: ' 0 22 * * 6'
 
 env:
   IMAGE_CONTEXT: ./xray-tproxy
@@ -25,8 +23,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       remote_version: ${{ steps.remote_version.outputs.remote_version }}
-      local_version: ${{ steps.local_version.outputs.local_version }}
-      should_build: ${{ steps.should_build.outputs.should_build }}
     steps:
       # 1. 获取远程版本
       - name: Get remote version
@@ -55,44 +51,6 @@ jobs:
           echo "Remove Version: $LATEST_DOCKER_TAG"
           echo "remote_version=$LATEST_DOCKER_TAG" >> $GITHUB_OUTPUT
 
-      # 2. 获取本地版本
-      - name: Get local version
-        id: local_version
-        run: |
-          # 使用 curl 和 jq 查询 Docker Hub API
-          DOCKERHUB_TAG_1=$(curl -s "https://hub.docker.com/v2/repositories/${{ env.REGISTRY_IMAGE }}/tags/" | jq -r '.results[0].name')
-          DOCKERHUB_TAG_2=$(curl -s "https://hub.docker.com/v2/repositories/${{ env.REGISTRY_IMAGE }}/tags/" | jq -r '.results[1].name')
-
-          # 排除掉 latest 标签
-          if [ "$DOCKERHUB_TAG_2" == "latest" ]; then
-             DOCKERHUB_TAG=$DOCKERHUB_TAG_1
-          elif [ "$DOCKERHUB_TAG_1" == "latest" ]; then
-             DOCKERHUB_TAG=$DOCKERHUB_TAG_2
-          fi
-
-          if [ -z "$DOCKERHUB_TAG" ] || [ "$DOCKERHUB_TAG" = "null" ]; then
-             # 如果没有找到任何 Tag (可能是新镜像或 API 失败)，我们可以假定需要构建
-             echo "Warning: Could not reliably determine Docker Hub latest tag. Assuming build required."
-             LATEST_DOCKER_TAG="v0.0.0" # 设置一个低版本，确保下一步触发
-          else
-             LATEST_DOCKER_TAG=$DOCKERHUB_TAG
-          fi
-          
-          echo "Local version: $LATEST_DOCKER_TAG"
-          echo "local_version=$LATEST_DOCKER_TAG" >> $GITHUB_OUTPUT
-
-      # 3. 判断是否需要触发后续操作
-      - name: Check for New Release
-        id: should_build
-        run: |
-          if [ "${{ steps.remote_version.outputs.remote_version }}" != "${{ steps.local_version.outputs.local_version }}" ]; then
-            echo "New release found! Remote version: ${{ steps.remote_version.outputs.remote_version }}, Local version: ${{ steps.local_version.outputs.local_version }}"
-            echo "should_build=true" >> $GITHUB_OUTPUT
-          else
-            echo "No new release found! Remote version: ${{ steps.remote_version.outputs.remote_version }}, Local version: ${{ steps.local_version.outputs.local_version }}"
-            echo "should_build=false" >> $GITHUB_OUTPUT
-          fi
-
   build-images:
     runs-on: ubuntu-latest
     permissions:
@@ -110,7 +68,7 @@ jobs:
         linux/s390x
     needs:
       - check-updates
-    if: ${{ needs.check-updates.outputs.should_build == 'true' }} || || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch'
     steps:
       - name: Prepare
         run: |
