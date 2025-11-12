@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM python:3.12.9-bookworm
+FROM python:3.12.9-bookworm
 
 ENV PATH=/root/.local/bin:$PATH
 
@@ -9,13 +9,14 @@ RUN apt-get update \
  && apt-get install -y wget curl git git-lfs \
  && rm -rf /var/lib/apt/lists/* \
  && git clone https://github.com/index-tts/index-tts /app \
- && pip install -U uv \
+ && pip install --no-cache-dir -U pip \
+ && pip install --no-cache-dir -U uv \
  && git lfs install \
  && git lfs pull \
- && uv sync --all-extras --default-index "https://mirrors.aliyun.com/pypi/simple"
+ && uv sync --all-extras --no-cache-dir --default-index "https://mirrors.aliyun.com/pypi/simple"
 
 # 下载模型
-RUN uv tool install "huggingface-hub[cli,hf_xet]" \
+RUN uv tool install --no-cache-dir "huggingface-hub[cli,hf_xet]" \
  && hf download funasr/campplus \
  && hf download facebook/w2v-bert-2.0 \
  && hf download amphion/MaskGCT \
