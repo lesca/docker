@@ -1,0 +1,108 @@
+# Reference: Multi-platform image with GitHub Actions
+# https://docs.docker.com/build/ci/github-actions/multi-platform/
+
+name: docker-image-index-tts
+concurrency: deploy-${{ github.workflow }}
+
+on: 
+  push:
+    branches:
+      - '*'
+    paths:
+      - index-tts/Dockerfile
+      - .github/workflows/index-tts-docker.yaml
+  workflow_dispatch:
+
+env:
+  IMAGE_CONTEXT: ./index-tts
+  REGISTRY_IMAGE: ${{ github.repository_owner }}/index-tts
+
+jobs:
+  check-updates:
+    runs-on: ubuntu-latest
+    outputs:
+      remote_version: ${{ steps.remote_version.outputs.remote_version }}
+    steps:
+      # 1. 获取远程版本
+      - name: Get remote version
+        id: remote_version
+        run: |
+          # 使用 curl 和 jq 查询 Docker Hub API
+          REMOTE_REPO=lesca/xray
+          DOCKERHUB_TAG_1=$(curl -s "https://hub.docker.com/v2/repositories/$REMOTE_REPO/tags/" | jq -r '.results[0].name')
+          DOCKERHUB_TAG_2=$(curl -s "https://hub.docker.com/v2/repositories/$REMOTE_REPO/tags/" | jq -r '.results[1].name')
+
+          # 排除掉 latest 标签
+          if [ "$DOCKERHUB_TAG_2" == "latest" ]; then
+             DOCKERHUB_TAG=$DOCKERHUB_TAG_1
+          elif [ "$DOCKERHUB_TAG_1" == "latest" ]; then
+             DOCKERHUB_TAG=$DOCKERHUB_TAG_2
+          fi
+
+          if [ -z "$DOCKERHUB_TAG" ] || [ "$DOCKERHUB_TAG" = "null" ]; then
+             # 如果没有找到任何 Tag (可能是新镜像或 API 失败)，我们可以假定需要构建
+             echo "Warning: Could not reliably determine Docker Hub latest tag. Assuming build required."
+             LATEST_DOCKER_TAG="v0.0.0" # 设置一个低版本，确保下一步触发
+          else
+             LATEST_DOCKER_TAG=$DOCKERHUB_TAG
+          fi
+          
+          echo "Remove Version: $LATEST_DOCKER_TAG"
+          echo "remote_version=$LATEST_DOCKER_TAG" >> $GITHUB_OUTPUT
+
+  build-images:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read 
+      packages: write
+    env:
+      BUILD_PLATFORMS: |
+        linux/amd64
+        linux/arm64
+    needs:
+      - check-updates
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    steps:
+      - name: Prepare
+        run: |
+          echo "TODAY=$(date +'%Y%m%d')" >> $GITHUB_ENV
+          echo "TODAY: $TODAY"
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build images
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          platforms: ${{ env.BUILD_PLATFORMS }}
+          context: ${{ env.IMAGE_CONTEXT }}
+          file: ${{ env.IMAGE_CONTEXT }}/Dockerfile
+          labels: ${{ steps.meta.outputs.labels }}
+          tags: |
+            ${{ env.REGISTRY_IMAGE }}:latest
+            ${{ env.REGISTRY_IMAGE }}:${{ needs.check-updates.outputs.remote_version }}-${{ env.TODAY }}
+            ghcr.io/${{ env.REGISTRY_IMAGE }}:latest
+            ghcr.io/${{ env.REGISTRY_IMAGE }}:${{ needs.check-updates.outputs.remote_version }}-${{ env.TODAY }}
+          push: true
+          build-args: |
+            VERSION=${{ needs.check-updates.outputs.remote_version }}
