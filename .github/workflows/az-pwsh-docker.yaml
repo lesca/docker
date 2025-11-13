@@ -10,10 +10,9 @@ on:
       - '*'
     paths:
       - az-pwsh/Dockerfile*
-      - .github/workflows/az-pwsh-docker.yaml
   workflow_dispatch:
   schedule:
-    - cron: '0 0 * * 0' # At 00:00 on every Sunday.
+    - cron: '0 0 28 * *' # At 00:00 on day-of-month 28.
 
 env:
   IMAGE_CONTEXT: az-pwsh
