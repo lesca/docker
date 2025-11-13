@@ -57,26 +57,17 @@ jobs:
           echo "TODAY=$(date +'%Y%m%d')" >> $GITHUB_ENV
           echo "TODAY: $TODAY"
 
-      - name: Free space before free-up
-        run: |
-          echo "Free space:"
-          df -h
-
       - name: Maximize build space
-        uses: easimon/maximize-build-space@master
-        with:
-          root-reserve-mb: 512
-          swap-size-mb: 1024
-          remove-dotnet: 'true'
-          remove-android: 'true'
-          remove-haskell: 'true'
-          remove-codeql: 'true'
-          remove-docker-images: 'true'
-
-      - name: Free space after free-up
+        shell: bash
         run: |
-          echo "Free space:"
-          df -h
+            df -h
+            sudo rm -rf /usr/share/dotnet
+            sudo rm -rf /usr/local/lib/android
+            sudo rm -rf /opt/ghc
+            sudo rm -rf /opt/hostedtoolcache/CodeQL
+            sudo docker image prune --all --force
+            sudo docker builder prune -a
+            df -h
 
       - name: Checkout
         uses: actions/checkout@v4
