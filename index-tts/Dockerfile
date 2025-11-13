@@ -1,14 +1,16 @@
-FROM python:3.12.9-bookworm
+FROM --platform=$BUILDPLATFORM python:3.12.9-bookworm
 
 ENV PATH=/root/.local/bin:$PATH
 
 WORKDIR /app
 
+ARG VERSION
+
 # 安装系统依赖
 RUN apt-get update \
  && apt-get install -y wget curl git git-lfs \
  && rm -rf /var/lib/apt/lists/* \
- && git clone https://github.com/index-tts/index-tts /app \
+ && git clone --branch $VERSION https://github.com/index-tts/index-tts /app \
  && pip install --no-cache-dir -U pip \
  && pip install --no-cache-dir -U uv \
  && git lfs install \

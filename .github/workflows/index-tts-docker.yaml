@@ -27,28 +27,17 @@ jobs:
       - name: Get remote version
         id: remote_version
         run: |
-          # 使用 curl 和 jq 查询 Docker Hub API
-          REMOTE_REPO=lesca/xray
-          DOCKERHUB_TAG_1=$(curl -s "https://hub.docker.com/v2/repositories/$REMOTE_REPO/tags/" | jq -r '.results[0].name')
-          DOCKERHUB_TAG_2=$(curl -s "https://hub.docker.com/v2/repositories/$REMOTE_REPO/tags/" | jq -r '.results[1].name')
-
-          # 排除掉 latest 标签
-          if [ "$DOCKERHUB_TAG_2" == "latest" ]; then
-             DOCKERHUB_TAG=$DOCKERHUB_TAG_1
-          elif [ "$DOCKERHUB_TAG_1" == "latest" ]; then
-             DOCKERHUB_TAG=$DOCKERHUB_TAG_2
-          fi
-
-          if [ -z "$DOCKERHUB_TAG" ] || [ "$DOCKERHUB_TAG" = "null" ]; then
-             # 如果没有找到任何 Tag (可能是新镜像或 API 失败)，我们可以假定需要构建
-             echo "Warning: Could not reliably determine Docker Hub latest tag. Assuming build required."
-             LATEST_DOCKER_TAG="v0.0.0" # 设置一个低版本，确保下一步触发
-          else
-             LATEST_DOCKER_TAG=$DOCKERHUB_TAG
+          REMOTE_REPO="index-tts/index-tts" 
+          # 使用 GitHub CLI 或 curl/jq 获取最新 Release Tag
+          LATEST_TAG=$(curl -s "https://api.github.com/repos/${REMOTE_REPO}/releases/latest" | jq -r .tag_name)
+          
+          if [ "$LATEST_TAG" = "null" ]; then
+            echo "::error::Could not find latest release tag."
+            exit 1
           fi
           
-          echo "Remove Version: $LATEST_DOCKER_TAG"
-          echo "remote_version=$LATEST_DOCKER_TAG" >> $GITHUB_OUTPUT
+          echo "Remote Version: $LATEST_TAG"
+          echo "remote_version=$LATEST_TAG" >> $GITHUB_OUTPUT
 
   build-images:
     runs-on: ubuntu-latest
@@ -67,6 +56,27 @@ jobs:
         run: |
           echo "TODAY=$(date +'%Y%m%d')" >> $GITHUB_ENV
           echo "TODAY: $TODAY"
+
+      - name: Free space before free-up
+        run: |
+          echo "Free space:"
+          df -h
+
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 512
+          swap-size-mb: 1024
+          remove-dotnet: 'true'
+          remove-android: 'true'
+          remove-haskell: 'true'
+          remove-codeql: 'true'
+          remove-docker-images: 'true'
+
+      - name: Free space after free-up
+        run: |
+          echo "Free space:"
+          df -h
 
       - name: Checkout
         uses: actions/checkout@v4
