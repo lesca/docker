@@ -1,0 +1,31 @@
+services:
+  comfyui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: comfyui
+    image: comfyui:latest
+    stop_signal: SIGKILL
+    # environment:
+    #   - HF_ENDPOINT=https://hf-mirror.com
+    #   - GITHUB_ENDPOINT=https://gh-proxy.com
+    
+    # GPU 
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+    volumes:
+      - ./data/models/models:/models
+      - ./data/models/huggingface:/root/.cache/huggingface
+      - ./data/models/torch:/root/.cache/torch
+      - ./data/input:/app/ComfyUI/input
+      - ./data/output:/app/ComfyUI/output
+      - ./data/workflows:/app/ComfyUI/user/default/workflows
+
+    ports:
+      - "8188:8188"

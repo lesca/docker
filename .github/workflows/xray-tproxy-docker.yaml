@@ -11,7 +11,6 @@ on:
     paths:
       - xray-tproxy/Dockerfile
       - xray-tproxy/entrypoint.sh
-      - .github/workflows/xray-tproxy-docker.yaml
   workflow_dispatch:
 
 env:
@@ -104,7 +103,6 @@ jobs:
           platforms: ${{ env.BUILD_PLATFORMS }}
           context: ${{ env.IMAGE_CONTEXT }}
           file: ${{ env.IMAGE_CONTEXT }}/Dockerfile
-          labels: ${{ steps.meta.outputs.labels }}
           tags: |
             ${{ env.REGISTRY_IMAGE }}:latest
             ${{ env.REGISTRY_IMAGE }}:${{ needs.check-updates.outputs.remote_version }}-${{ env.TODAY }}

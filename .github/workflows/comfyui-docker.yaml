@@ -1,7 +1,8 @@
 # Reference: Multi-platform image with GitHub Actions
 # https://docs.docker.com/build/ci/github-actions/multi-platform/
+# https://docs.docker.com/build/ci/github-actions/push-multi-registries/
 
-name: docker-image-index-tts
+name: docker-image-comfyui
 concurrency: deploy-${{ github.workflow }}
 
 on: 
@@ -9,13 +10,17 @@ on:
     branches:
       - '*'
     paths:
-      - index-tts/Dockerfile
-      - .github/workflows/index-tts-docker.yaml
+      - comfyui/Dockerfile
+      - comfyui/entrypoint.sh
   workflow_dispatch:
+  schedule:
+    - cron: ' 0 20 * * 5'
 
 env:
-  IMAGE_CONTEXT: ./index-tts
-  REGISTRY_IMAGE: ${{ github.repository_owner }}/index-tts
+  IMAGE_CONTEXT: ./comfyui
+  REGISTRY_IMAGE: ${{ github.repository_owner }}/comfyui
+  BUILD_PLATFORMS: |
+    linux/amd64
 
 jobs:
   check-updates:
@@ -27,7 +32,7 @@ jobs:
       - name: Get remote version
         id: remote_version
         run: |
-          REMOTE_REPO="index-tts/index-tts" 
+          REMOTE_REPO="comfyanonymous/ComfyUI" 
           # 使用 GitHub CLI 或 curl/jq 获取最新 Release Tag
           LATEST_TAG=$(curl -s "https://api.github.com/repos/${REMOTE_REPO}/releases/latest" | jq -r .tag_name)
           
@@ -39,15 +44,12 @@ jobs:
           echo "Remote Version: $LATEST_TAG"
           echo "remote_version=$LATEST_TAG" >> $GITHUB_OUTPUT
 
+
   build-images:
     runs-on: ubuntu-latest
     permissions:
       contents: read 
       packages: write
-    env:
-      BUILD_PLATFORMS: |
-        linux/amd64
-        linux/arm64
     needs:
       - check-updates
     if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
@@ -94,7 +96,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build images
+      - name: Build slim images
         id: build
         uses: docker/build-push-action@v6
         with:
@@ -103,9 +105,25 @@ jobs:
           file: ${{ env.IMAGE_CONTEXT }}/Dockerfile
           tags: |
             ${{ env.REGISTRY_IMAGE }}:latest
-            ${{ env.REGISTRY_IMAGE }}:${{ needs.check-updates.outputs.remote_version }}-${{ env.TODAY }}
+            ${{ env.REGISTRY_IMAGE }}:${{ needs.check-updates.outputs.remote_version }}-slim-${{ env.TODAY }}
             ghcr.io/${{ env.REGISTRY_IMAGE }}:latest
-            ghcr.io/${{ env.REGISTRY_IMAGE }}:${{ needs.check-updates.outputs.remote_version }}-${{ env.TODAY }}
+            ghcr.io/${{ env.REGISTRY_IMAGE }}:${{ needs.check-updates.outputs.remote_version }}-slim-${{ env.TODAY }}
           push: true
           build-args: |
             VERSION=${{ needs.check-updates.outputs.remote_version }}
+            BUILD_MODE=slim
+
+      - name: Build pro images
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          platforms: ${{ env.BUILD_PLATFORMS }}
+          context: ${{ env.IMAGE_CONTEXT }}
+          file: ${{ env.IMAGE_CONTEXT }}/Dockerfile
+          tags: |
+            ${{ env.REGISTRY_IMAGE }}:${{ needs.check-updates.outputs.remote_version }}-pro-${{ env.TODAY }}
+            ghcr.io/${{ env.REGISTRY_IMAGE }}:${{ needs.check-updates.outputs.remote_version }}-pro-${{ env.TODAY }}
+          push: true
+          build-args: |
+            VERSION=${{ needs.check-updates.outputs.remote_version }}
+            BUILD_MODE=pro
