@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: index-tts
-    image: index-tts:latest
+    image: lesca/index-tts:latest
 
     # GPU 配置
     deploy:

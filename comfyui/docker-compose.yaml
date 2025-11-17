@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: comfyui
-    image: comfyui:latest
+    image: lesca/comfyui:latest
     stop_signal: SIGKILL
     # environment:
     #   - HF_ENDPOINT=https://hf-mirror.com
