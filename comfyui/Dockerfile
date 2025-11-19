@@ -68,7 +68,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 RUN --mount=type=cache,target=/var/cache/apt/archives,sharing=locked \
     apt update \
  && apt install -y --no-install-recommends \
-    git python3 python3-pip python3-venv ffmpeg rsync aria2 \
+    git python3 python3-pip python3-venv ffmpeg rsync aria2 vim \
  && rm -rf /var/lib/apt/lists/* 
 
 COPY --from=builder /app /app

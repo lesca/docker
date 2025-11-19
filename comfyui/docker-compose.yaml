@@ -6,10 +6,24 @@ services:
     container_name: comfyui
     image: lesca/comfyui:latest
     stop_signal: SIGKILL
+    restart: unless-stopped
     # environment:
+    #   - COMFYUI_MANAGER_ARIA2_SERVER=http://aria2:6800
+    #   - COMFYUI_MANAGER_ARIA2_SECRET=1234567890
     #   - HF_ENDPOINT=https://hf-mirror.com
     #   - GITHUB_ENDPOINT=https://gh-proxy.com
-    
+
+    ports:
+      - "8188:8188"
+
+    volumes:
+      - ./data/models:/app/models
+      - ./data/custom_nodes:/app/custom_nodes
+      - ./data/input:/app/ComfyUI/input
+      - ./data/output:/app/ComfyUI/output
+      - ./data/workflows:/app/ComfyUI/user/default/workflows
+      # - ./entrypoint.sh:/app/entrypoint.sh
+
     # GPU 
     deploy:
       resources:
@@ -19,13 +33,21 @@ services:
               count: 1
               capabilities: [gpu]
 
-    volumes:
-      - ./data/models/models:/models
-      - ./data/models/huggingface:/root/.cache/huggingface
-      - ./data/models/torch:/root/.cache/torch
-      - ./data/input:/app/ComfyUI/input
-      - ./data/output:/app/ComfyUI/output
-      - ./data/workflows:/app/ComfyUI/user/default/workflows
-
-    ports:
-      - "8188:8188"
+  # aria2:
+  #   container_name: aria2
+  #   image: p3terx/aria2-pro
+  #   restart: unless-stopped
+  #   stop_signal: SIGKILL
+  #   environment:
+  #     - PUID=1000
+  #     - PGID=1001
+  #     - UMASK_SET=022
+  #     - RPC_SECRET=1234567890
+  #     - RPC_PORT=6800
+  #     - DISK_CACHE=64M
+  #     - IPV6_MODE=false
+  #     - UPDATE_TRACKERS=false
+  #     - CUSTOM_TRACKER_URL=
+  #   volumes:
+  #     - ./data/aria2:/config
+  #     - ./data/models:/models
