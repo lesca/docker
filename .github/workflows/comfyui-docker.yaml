@@ -104,11 +104,9 @@ jobs:
           context: ${{ env.IMAGE_CONTEXT }}
           file: ${{ env.IMAGE_CONTEXT }}/Dockerfile
           tags: |
-            ${{ env.REGISTRY_IMAGE }}:latest
             ${{ env.REGISTRY_IMAGE }}:latest-slim
-            ${{ env.REGISTRY_IMAGE }}:${{ needs.check-updates.outputs.remote_version }}-slim-${{ env.TODAY }}
-            ghcr.io/${{ env.REGISTRY_IMAGE }}:latest
             ghcr.io/${{ env.REGISTRY_IMAGE }}:latest-slim
+            ${{ env.REGISTRY_IMAGE }}:${{ needs.check-updates.outputs.remote_version }}-slim-${{ env.TODAY }}
             ghcr.io/${{ env.REGISTRY_IMAGE }}:${{ needs.check-updates.outputs.remote_version }}-slim-${{ env.TODAY }}
           push: true
           build-args: |
@@ -123,9 +121,11 @@ jobs:
           context: ${{ env.IMAGE_CONTEXT }}
           file: ${{ env.IMAGE_CONTEXT }}/Dockerfile
           tags: |
+            ${{ env.REGISTRY_IMAGE }}:latest
+            ghcr.io/${{ env.REGISTRY_IMAGE }}:latest
             ${{ env.REGISTRY_IMAGE }}:latest-pro
-            ${{ env.REGISTRY_IMAGE }}:${{ needs.check-updates.outputs.remote_version }}-pro-${{ env.TODAY }}
             ghcr.io/${{ env.REGISTRY_IMAGE }}:latest-pro
+            ${{ env.REGISTRY_IMAGE }}:${{ needs.check-updates.outputs.remote_version }}-pro-${{ env.TODAY }}
             ghcr.io/${{ env.REGISTRY_IMAGE }}:${{ needs.check-updates.outputs.remote_version }}-pro-${{ env.TODAY }}
           push: true
           build-args: |

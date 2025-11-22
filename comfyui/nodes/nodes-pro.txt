@@ -1,50 +1,33 @@
 # Performance
-welltop-cn/ComfyUI-TeaCache
 city96/ComfyUI-GGUF
 nunchaku-tech/ComfyUI-nunchaku
 
-# Workspace
-crystian/ComfyUI-Crystools
-Amorano/Jovi_Colorizer
-Amorano/Jovi_Help
-Amorano/Jovi_Measure
-Amorano/Jovi_Preset
-
 # General
-ltdrdata/was-node-suite-comfyui
-Amorano/Jovimetrix
-bash-j/mikey_nodes
-chrisgoringe/cg-use-everywhere
-jags111/efficiency-nodes-comfyui
 kijai/ComfyUI-KJNodes
-pythongosssss/ComfyUI-Custom-Scripts
-rgthree/rgthree-comfy
-shiimizu/ComfyUI_smZNodes
 yolain/ComfyUI-Easy-Use
+shiimizu/ComfyUI_smZNodes
 
 # Control
 ltdrdata/ComfyUI-Impact-Pack
-ltdrdata/ComfyUI-Impact-Subpack
-ltdrdata/ComfyUI-Inspire-Pack
-chflame163/ComfyUI_LayerStyle
-Fannovel16/comfyui_controlnet_aux
-florestefano1975/comfyui-portrait-master
-Gourieff/ComfyUI-ReActor
-huchenlei/ComfyUI-layerdiffuse
-kijai/ComfyUI-Florence2
-Kosinkadink/ComfyUI-Advanced-ControlNet
-mcmonkeyprojects/sd-dynamic-thresholding
-twri/sdxl_prompt_styler
 
 # Video
 Kosinkadink/ComfyUI-VideoHelperSuite
 kijai/ComfyUI-WanVideoWrapper
-Fannovel16/ComfyUI-Frame-Interpolation
-FizzleDorf/ComfyUI_FizzNodes
-Kosinkadink/ComfyUI-AnimateDiff-Evolved
-melMass/comfy_mtb
 
-# More
-pythongosssss/ComfyUI-WD14-Tagger
-SLAPaper/ComfyUI-Image-Selector
-ssitu/ComfyUI_UltimateSDUpscale
+# Sampler
+ClownsharkBatwing/RES4LYF
+
+# Utils
+rgthree/rgthree-comfy
+crystian/ComfyUI-Crystools
+
+# 金鱼工作流
+Fannovel16/comfyui_controlnet_aux
+pythongosssss/ComfyUI-Custom-Scripts
+chflame163/ComfyUI_LayerStyle
+MixLabPro/comfyui-mixlab-nodes
+numz/ComfyUI-SeedVR2_VideoUpscaler
+Suzie1/ComfyUI_Comfyroll_CustomNodes
+cubiq/ComfyUI_essentials
+scraed/LanPaint
+IuvenisSapiens/ComfyUI_Qwen3-VL-Instruct
