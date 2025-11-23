@@ -21,7 +21,7 @@ fi
 
 ### custom nodes ###
 # Backup custom nodes directory if destination is empty
-if [ -d "$CUSTOM_NODES_PATH" ] && [ -z "$(ls -A "$CUSTOM_NODES_PATH")" ]; then
+if [ -d "$CUSTOM_NODES_PATH" ]; then
     echo "[INFO] Moving custom nodes to $CUSTOM_NODES_PATH ..."
     rsync -a --no-o --no-g $COMFYIUI_PATH/custom_nodes/ $CUSTOM_NODES_PATH
 fi
@@ -35,7 +35,7 @@ fi
 ### start ###
 if [ "$#" -eq 0 ]; then
     echo "[INFO] Starting ComfyUI..."
-    python $COMFYIUI_PATH/main.py --listen --port $PORT
+    python $COMFYIUI_PATH/main.py --listen --port $PORT --preview-method auto
 else
     exec "$@"
 fi

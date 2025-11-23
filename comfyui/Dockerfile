@@ -20,7 +20,7 @@ RUN --mount=type=cache,target=/var/cache/apt/archives,sharing=locked \
 # https://github.com/Comfy-Org/comfy-cli
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install -U pip \
- && pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu128 \
+ && pip install torch torchvision torchaudio xformers --index-url https://download.pytorch.org/whl/cu128 \
  && pip install comfy-cli \
  && comfy --skip-prompt --no-enable-telemetry --here install --nvidia \
  && mkdir -p /app/ComfyUI/user/default/ComfyUI-Manager \
@@ -31,11 +31,11 @@ network_mode = offline
 EOF
 
 # build Saga Attention
-WORKDIR /build/SageAttention
-ENV TORCH_CUDA_ARCH_LIST="7.0 7.5 8.0 8.6 9.0"
-RUN git clone --depth 1 --branch v2.2.0 https://github.com/thu-ml/SageAttention.git /build/SageAttention \
- && export EXT_PARALLEL=4 NVCC_APPEND_FLAGS="--threads 8" MAX_JOBS=16 \
- && python setup.py install
+# WORKDIR /build/SageAttention
+# ENV TORCH_CUDA_ARCH_LIST="7.0 7.5 8.0 8.6 9.0"
+# RUN git clone --depth 1 --branch v2.2.0 https://github.com/thu-ml/SageAttention.git /build/SageAttention \
+#  && export EXT_PARALLEL=4 NVCC_APPEND_FLAGS="--threads 8" MAX_JOBS=16 \
+#  && python setup.py install
 
 # install custom nodes
 WORKDIR /app/ComfyUI/custom_nodes
@@ -49,7 +49,7 @@ RUN nodes_list=$(sed -e '/^#/d' -e '/^$/d' -e 's/\s*#.*$//' nodes/nodes-${BUILD_
 # https://github.com/Comfy-Org/ComfyUI-Manager/blob/main/docs/en/cm-cli.md
 RUN --mount=type=cache,target=/root/.cache/pip \
     python /app/ComfyUI/custom_nodes/ComfyUI-Manager/cm-cli.py restore-dependencies \
- && nodes_deps=$(sed -e '/^#/d' -e '/^$/d' -e 's/\s*#.*$//' nodes/deps-${BUILD_MODE}.txt) \
+ && nodes_deps=$(sed -e '/^#/d' -e '/^$/d' -e 's/\s*#.*$//' nodes/deps.txt) \
  && for dep in $nodes_deps; do \
         pip install $dep; \
     done \
