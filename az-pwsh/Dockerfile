@@ -7,6 +7,7 @@ FROM base_${TARGETARCH} AS base
 RUN tdnf makecache \
  && tdnf install -y \
      azure-cli \
+     azcopy \
      git \
      net-tools \
      iputils \
