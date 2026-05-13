@@ -1,7 +1,7 @@
 # Reference: Multi-platform image with GitHub Actions
 # https://docs.docker.com/build/ci/github-actions/multi-platform/
 
-name: docker-image-index-tts
+name: index-tts-docker
 concurrency: deploy-${{ github.workflow }}
 
 on: 
@@ -17,36 +17,15 @@ env:
   REGISTRY_IMAGE: ${{ github.repository_owner }}/index-tts
 
 jobs:
-  check-updates:
-    runs-on: ubuntu-latest
-    outputs:
-      remote_version: ${{ steps.remote_version.outputs.remote_version }}
-    steps:
-      # 1. 获取远程版本
-      - name: Get remote version
-        id: remote_version
-        run: |
-          REMOTE_REPO="index-tts/index-tts" 
-          # 使用 GitHub CLI 或 curl/jq 获取最新 Release Tag
-          LATEST_TAG=$(curl -s "https://api.github.com/repos/${REMOTE_REPO}/releases/latest" | jq -r .tag_name)
-          
-          if [ "$LATEST_TAG" = "null" ]; then
-            echo "::error::Could not find latest release tag."
-            exit 1
-          fi
-          
-          echo "Remote Version: $LATEST_TAG"
-          echo "remote_version=$LATEST_TAG" >> $GITHUB_OUTPUT
-
   build-images:
     runs-on: ubuntu-latest
     permissions:
       contents: read 
       packages: write
     env:
+      BRANCH_NAME: main
       BUILD_PLATFORMS: |
         linux/amd64
-        linux/arm64
     needs:
       - check-updates
     if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
@@ -102,9 +81,9 @@ jobs:
           file: ${{ env.IMAGE_CONTEXT }}/Dockerfile
           tags: |
             ${{ env.REGISTRY_IMAGE }}:latest
-            ${{ env.REGISTRY_IMAGE }}:${{ needs.check-updates.outputs.remote_version }}-${{ env.TODAY }}
+            ${{ env.REGISTRY_IMAGE }}:${{ env.TODAY }}
             ghcr.io/${{ env.REGISTRY_IMAGE }}:latest
-            ghcr.io/${{ env.REGISTRY_IMAGE }}:${{ needs.check-updates.outputs.remote_version }}-${{ env.TODAY }}
+            ghcr.io/${{ env.REGISTRY_IMAGE }}:${{ env.TODAY }}
           push: true
           build-args: |
-            VERSION=${{ needs.check-updates.outputs.remote_version }}
+            BRANCH_NAME=${{ env.BRANCH_NAME }}

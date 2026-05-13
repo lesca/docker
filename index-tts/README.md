@@ -30,25 +30,6 @@ services:
 
 ### 自构建镜像 `index-tts:latest`
 
-```yaml
-services:
-  index-tts:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: index-tts
-    image: index-tts:latest
-
-    # GPU 配置
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
-
-    ports:
-      - "7860:7860"
-
+```bash
+docker buildx build --platform linux/arm64 --build-arg BRANCH_NAME=main -t index-tts:latest -f Dockerfile .
 ```
