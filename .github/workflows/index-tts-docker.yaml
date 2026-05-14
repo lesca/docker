@@ -8,8 +8,8 @@ on:
   push:
     branches:
       - '*'
-    paths:
-      - index-tts/Dockerfile
+    # paths:
+    #   - index-tts/Dockerfile
   workflow_dispatch:
 
 env:
@@ -18,7 +18,6 @@ env:
 
 jobs:
   build-images:
-    if: false
     runs-on: ubuntu-latest
     permissions:
       contents: read 
