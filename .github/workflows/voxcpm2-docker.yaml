@@ -1,0 +1,86 @@
+# Reference: Multi-platform image with GitHub Actions
+# https://docs.docker.com/build/ci/github-actions/multi-platform/
+
+name: voxcpm2-docker
+concurrency: deploy-${{ github.workflow }}
+
+on:
+  push:
+    branches:
+      - '*'
+    paths:
+      - voxcpm2/Dockerfile
+      - voxcpm2/entrypoint.sh
+  workflow_dispatch:
+
+env:
+  IMAGE_CONTEXT: ./voxcpm2
+  REGISTRY_IMAGE: ${{ github.repository_owner }}/voxcpm2
+
+jobs:
+  build-images:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      BUILD_PLATFORMS: |
+        linux/arm64
+    steps:
+      - name: Prepare
+        run: |
+          echo "TODAY=$(date +'%Y%m%d')" >> $GITHUB_ENV
+          echo "TODAY: $TODAY"
+          git clone -b main --single-branch --depth 1 https://github.com/OpenBMB/VoxCPM.git voxcpm2/VoxCPM
+
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+        with:
+          build-mount-path: '/var/lib/docker/'
+          root-reserve-mb: 512
+          temp-reserve-mb: 32
+          swap-size-mb: 32
+          remove-dotnet: 'true'
+          remove-android: 'true'
+          remove-haskell: 'true'
+          remove-codeql: 'true'
+          remove-docker-images: 'true'
+
+      - name: Restart docker
+        run: sudo service docker restart
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build images
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          platforms: ${{ env.BUILD_PLATFORMS }}
+          context: ${{ env.IMAGE_CONTEXT }}
+          file: ${{ env.IMAGE_CONTEXT }}/Dockerfile
+          tags: |
+            ${{ env.REGISTRY_IMAGE }}:latest
+            ${{ env.REGISTRY_IMAGE }}:${{ env.TODAY }}
+            ghcr.io/${{ env.REGISTRY_IMAGE }}:latest
+            ghcr.io/${{ env.REGISTRY_IMAGE }}:${{ env.TODAY }}
+          push: true

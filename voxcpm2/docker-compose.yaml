@@ -1,0 +1,11 @@
+services:
+  voxcpm2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: voxcpm2
+    image: lesca/voxcpm2:latest
+    stop_signal: SIGINT
+
+    ports:
+      - "8808:8808"
