@@ -1,0 +1,26 @@
+services:
+  indextts2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: indextts2
+    image: lesca/indextts2:latest
+    stop_signal: SIGINT
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        mode: non-blocking
+
+    ports:
+      - "7860:7860"
+
+    # GPU 配置
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
