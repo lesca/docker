@@ -31,7 +31,7 @@ jobs:
         run: |
           echo "TODAY=$(date +'%Y%m%d')" >> $GITHUB_ENV
           echo "TODAY: $TODAY"
-          git clone -b main --single-branch --depth 1 https://github.com/OpenBMB/VoxCPM.git voxcpm2/VoxCPM
+          git clone -b main --single-branch --depth 1 https://github.com/OpenBMB/VoxCPM.git VoxCPM
 
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
