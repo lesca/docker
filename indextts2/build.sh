@@ -13,9 +13,11 @@ git clone --single-branch --branch main --depth 1 https://github.com/index-tts/i
 python3 -m venv $VIRTUAL_ENV
 source $VIRTUAL_ENV/bin/activate
 
-# pip 更新
-# pip config set global.index-url https://mirrors.aliyun.com/pypi/simple
-pip config set global.index-url https://mirrors.bfsu.edu.cn/pypi/web/simple
+# pip 更新 (if not github actions)
+if [ -z "$GITHUB_ACTIONS" ]; then
+    # pip config set global.index-url https://mirrors.aliyun.com/pypi/simple
+    pip config set global.index-url https://mirrors.bfsu.edu.cn/pypi/web/simple
+fi
 pip install --no-cache-dir -U pip
 
 
