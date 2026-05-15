@@ -15,6 +15,9 @@ env:
 jobs:
   build-images:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: '/var/lib/docker/repo/'
     permissions:
       contents: read
       packages: write
@@ -45,7 +48,6 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v6
-        path: '/var/lib/docker/repo/'
 
       - name: clone project
         run: |
