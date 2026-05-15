@@ -37,17 +37,11 @@ RUN if [ "$(uname -m)" = "aarch64" ] || [ "$(uname -m)" = "arm64" ]; then \
 
 # 安装依赖
 RUN sed -i '/torchcodec/d' pyproject.toml \
- && uv sync --no-cache-dir \
+ && uv sync --no-cache-dir --python $VIRTUAL_ENV/bin/python \
  && pip install --no-cache-dir -e .
 
-# 下载模型 (~/.cache/modelscope)
-RUN uv tool install --no-cache-dir "modelscope"
-RUN modelscope download --model iic/SenseVoiceSmall
-RUN modelscope download --model OpenBMB/VoxCPM2 --local_dir checkpoints
-RUN modelscope download --model iic/speech_zipenhancer_ans_multiloss_16k_base
-
 ### 最终构建阶段 ###
-FROM --platform=$BUILDPLATFORM python:3.11-trixie
+FROM --platform=$BUILDPLATFORM python:3.11-trixie AS runner
 
 # 安装系统依赖
 # RUN sed -i 's/deb.debian.org/mirrors.bfsu.edu.cn/g' /etc/apt/sources.list.d/debian.sources
@@ -60,10 +54,12 @@ RUN apt-get update \
  ffmpeg \
  && rm -rf /var/lib/apt/lists/*
 
+# 复制模型
+COPY models/OpenBMB/VoxCPM2 /app/checkpoints
+COPY models/iic /root/.cache/modelscope/hub/models/iic
+
 # 复制构建阶段产物
 COPY --from=builder --chown=0:0 --chmod=755 /app /app
-COPY --from=builder --chown=0:0 --chmod=755 /root/.local /root/.local
-COPY --from=builder --chown=0:0 --chmod=755 /root/.cache/modelscope /root/.cache/modelscope
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 

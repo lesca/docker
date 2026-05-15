@@ -8,14 +8,12 @@ on:
   push:
     branches:
       - '*'
-    paths:
-      - voxcpm2/Dockerfile
-      - voxcpm2/entrypoint.sh
   workflow_dispatch:
 
 env:
   IMAGE_CONTEXT: ./voxcpm2
   REGISTRY_IMAGE: ${{ github.repository_owner }}/voxcpm2
+  PROJECT_NAME: voxcpm2
 
 jobs:
   build-images:
@@ -53,7 +51,8 @@ jobs:
 
       - name: clone project
         run: |
-          git clone -b main --single-branch --depth 1 https://github.com/OpenBMB/VoxCPM.git voxcpm2/VoxCPM
+          chmod +x ${{ env.PROJECT_NAME }}/build.sh
+          ./${{ env.PROJECT_NAME }}/build.sh
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3

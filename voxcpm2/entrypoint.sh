@@ -11,5 +11,8 @@ export OPENBLAS_NUM_THREADS="${OPENBLAS_NUM_THREADS:-$(nproc)}"
 export NUMEXPR_NUM_THREADS="${NUMEXPR_NUM_THREADS:-$(nproc)}"
 export TORCH_NUM_THREADS="${TORCH_NUM_THREADS:-$(nproc)}"
 
+# Python 输出不缓冲
+export PYTHONUNBUFFERED=1
+
 # 启动应用
 exec "$@"
