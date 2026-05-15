@@ -11,9 +11,11 @@ git clone -b main --single-branch --depth 1 https://github.com/OpenBMB/VoxCPM.gi
 python3 -m venv $VIRTUAL_ENV
 source $VIRTUAL_ENV/bin/activate
 
-# pip 更新
-# pip config set global.index-url https://mirrors.aliyun.com/pypi/simple
-pip config set global.index-url https://mirrors.bfsu.edu.cn/pypi/web/simple
+# pip 更新 (if not github actions)
+if [ -z "$GITHUB_ACTIONS" ]; then
+    # pip config set global.index-url https://mirrors.aliyun.com/pypi/simple
+    pip config set global.index-url https://mirrors.bfsu.edu.cn/pypi/web/simple
+fi
 pip install --no-cache-dir -U pip
 
 
@@ -24,8 +26,8 @@ pip install --no-cache-dir huggingface-hub
 # 下载模型
 if [ "$GITHUB_ACTIONS" == "true" ]; then
     hf download OpenBMB/VoxCPM2 --local-dir $MODEL_DIR/OpenBMB/VoxCPM2
-    hf download iic/SenseVoiceSmall --local-dir $MODEL_DIR/iic/SenseVoiceSmall
-    hf download iic/speech_zipenhancer_ans_multiloss_16k_base --local-dir $MODEL_DIR/iic/speech_zipenhancer_ans_multiloss_16k_base
+    modelscope download iic/SenseVoiceSmall --local-dir $MODEL_DIR/iic/SenseVoiceSmall
+    modelscope download iic/speech_zipenhancer_ans_multiloss_16k_base --local-dir $MODEL_DIR/iic/speech_zipenhancer_ans_multiloss_16k_base
 else
     modelscope download OpenBMB/VoxCPM2 --local-dir $MODEL_DIR/OpenBMB/VoxCPM2
     modelscope download iic/SenseVoiceSmall --local-dir $MODEL_DIR/iic/SenseVoiceSmall
