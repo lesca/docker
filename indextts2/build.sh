@@ -24,11 +24,19 @@ pip install --no-cache-dir modelscope
 pip install --no-cache-dir huggingface-hub
 
 # 下载模型
-modelscope download IndexTeam/IndexTTS-2 --local_dir $MODEL_DIR/IndexTeam/IndexTTS-2
-modelscope download facebook/w2v-bert-2.0 --local_dir $MODEL_DIR/facebook/w2v-bert-2.0
-modelscope download amphion/MaskGCT --local_dir $MODEL_DIR/amphion/MaskGCT
-hf download funasr/campplus --local-dir $MODEL_DIR/funasr/campplus
-hf download nvidia/bigvgan_v2_22khz_80band_256x --local-dir $MODEL_DIR/nvidia/bigvgan_v2_22khz_80band_256x
+if [ "$GITHUB_ACTIONS" == "true" ]; then
+    hf download IndexTeam/IndexTTS-2 --local-dir $MODEL_DIR/IndexTeam/IndexTTS-2
+    hf download facebook/w2v-bert-2.0 --local-dir $MODEL_DIR/facebook/w2v-bert-2.0
+    hf download amphion/MaskGCT --local-dir $MODEL_DIR/amphion/MaskGCT
+    hf download funasr/campplus --local-dir $MODEL_DIR/funasr/campplus
+    hf download nvidia/bigvgan_v2_22khz_80band_256x --local-dir $MODEL_DIR/nvidia/bigvgan_v2_22khz_80band_256x
+else
+    modelscope download IndexTeam/IndexTTS-2 --local_dir $MODEL_DIR/IndexTeam/IndexTTS-2
+    modelscope download facebook/w2v-bert-2.0 --local_dir $MODEL_DIR/facebook/w2v-bert-2.0
+    modelscope download amphion/MaskGCT --local_dir $MODEL_DIR/amphion/MaskGCT
+    hf download funasr/campplus --local-dir $MODEL_DIR/funasr/campplus
+    hf download nvidia/bigvgan_v2_22khz_80band_256x --local-dir $MODEL_DIR/nvidia/bigvgan_v2_22khz_80band_256x
+fi
 
 # 构建 arm64 镜像 (if not github actions)
 if [ -z "$GITHUB_ACTIONS" ]; then

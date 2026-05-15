@@ -22,9 +22,15 @@ pip install --no-cache-dir modelscope
 pip install --no-cache-dir huggingface-hub
 
 # 下载模型
-modelscope download --model OpenBMB/VoxCPM2 --local_dir $MODEL_DIR/OpenBMB/VoxCPM2
-modelscope download --model iic/SenseVoiceSmall --local_dir $MODEL_DIR/iic/SenseVoiceSmall
-modelscope download --model iic/speech_zipenhancer_ans_multiloss_16k_base --local_dir $MODEL_DIR/iic/speech_zipenhancer_ans_multiloss_16k_base
+if [ "$GITHUB_ACTIONS" == "true" ]; then
+    hf download OpenBMB/VoxCPM2 --local-dir $MODEL_DIR/OpenBMB/VoxCPM2
+    hf download iic/SenseVoiceSmall --local-dir $MODEL_DIR/iic/SenseVoiceSmall
+    hf download iic/speech_zipenhancer_ans_multiloss_16k_base --local-dir $MODEL_DIR/iic/speech_zipenhancer_ans_multiloss_16k_base
+else
+    modelscope download OpenBMB/VoxCPM2 --local-dir $MODEL_DIR/OpenBMB/VoxCPM2
+    modelscope download iic/SenseVoiceSmall --local-dir $MODEL_DIR/iic/SenseVoiceSmall
+    modelscope download iic/speech_zipenhancer_ans_multiloss_16k_base --local-dir $MODEL_DIR/iic/speech_zipenhancer_ans_multiloss_16k_base
+fi
 
 # 构建 arm64 镜像 (if not github actions)
 if [ -z "$GITHUB_ACTIONS" ]; then
