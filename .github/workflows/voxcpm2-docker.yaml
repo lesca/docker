@@ -5,9 +5,6 @@ name: voxcpm2-docker
 concurrency: deploy-${{ github.workflow }}
 
 on:
-  push:
-    branches:
-      - '*'
   workflow_dispatch:
 
 env:
