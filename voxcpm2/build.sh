@@ -25,15 +25,16 @@ pip install --no-cache-dir huggingface-hub
 
 # 下载模型
 if [ "$GITHUB_ACTIONS" == "true" ]; then
-    mkdir -p /var/lib/docker/models
+    sudo mkdir -p /var/lib/docker/models
+    sudo chown -R $USER:$USER /var/lib/docker/models
     ln -sf /var/lib/docker/models $MODEL_DIR
     hf download OpenBMB/VoxCPM2 --local-dir $MODEL_DIR/OpenBMB/VoxCPM2
-    modelscope download iic/SenseVoiceSmall --local-dir $MODEL_DIR/iic/SenseVoiceSmall
-    modelscope download iic/speech_zipenhancer_ans_multiloss_16k_base --local-dir $MODEL_DIR/iic/speech_zipenhancer_ans_multiloss_16k_base
+    modelscope download iic/SenseVoiceSmall --local_dir $MODEL_DIR/iic/SenseVoiceSmall
+    modelscope download iic/speech_zipenhancer_ans_multiloss_16k_base --local_dir $MODEL_DIR/iic/speech_zipenhancer_ans_multiloss_16k_base
 else
-    modelscope download OpenBMB/VoxCPM2 --local-dir $MODEL_DIR/OpenBMB/VoxCPM2
-    modelscope download iic/SenseVoiceSmall --local-dir $MODEL_DIR/iic/SenseVoiceSmall
-    modelscope download iic/speech_zipenhancer_ans_multiloss_16k_base --local-dir $MODEL_DIR/iic/speech_zipenhancer_ans_multiloss_16k_base
+    modelscope download OpenBMB/VoxCPM2 --local_dir $MODEL_DIR/OpenBMB/VoxCPM2
+    modelscope download iic/SenseVoiceSmall --local_dir $MODEL_DIR/iic/SenseVoiceSmall
+    modelscope download iic/speech_zipenhancer_ans_multiloss_16k_base --local_dir $MODEL_DIR/iic/speech_zipenhancer_ans_multiloss_16k_base
 fi
 
 # 构建 arm64 镜像 (if not github actions)

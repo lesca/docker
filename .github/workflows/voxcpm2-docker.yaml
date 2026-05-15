@@ -44,7 +44,8 @@ jobs:
         run: sudo service docker restart
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+        path: '/var/lib/docker/repo/'
 
       - name: clone project
         run: |
