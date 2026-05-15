@@ -43,8 +43,9 @@ jobs:
       - name: Restart docker and restore $GITHUB_WORKSPACE
         run: |
           sudo service docker restart
-          sudo mkdir -p /var/lib/docker/workspace
           sudo rm -rf $GITHUB_WORKSPACE
+          sudo mkdir -p $GITHUB_WORKSPACE
+          sudo mkdir -p /var/lib/docker/workspace
           sudo mount --bind /var/lib/docker/workspace $GITHUB_WORKSPACE
           sudo chown -R $USER:$USER $GITHUB_WORKSPACE
 
