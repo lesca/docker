@@ -1,16 +1,16 @@
 # Reference: Multi-platform image with GitHub Actions
 # https://docs.docker.com/build/ci/github-actions/multi-platform/
 
-name: voxcpm2-docker
+name: indextts2-docker
 concurrency: deploy-${{ github.workflow }}
 
 on:
   workflow_dispatch:
 
 env:
-  IMAGE_CONTEXT: ./voxcpm2
-  REGISTRY_IMAGE: ${{ github.repository_owner }}/voxcpm2
-  PROJECT_NAME: voxcpm2
+  IMAGE_CONTEXT: ./indextts2
+  REGISTRY_IMAGE: ${{ github.repository_owner }}/indextts2
+  PROJECT_NAME: indextts2
 
 jobs:
   build-images:
