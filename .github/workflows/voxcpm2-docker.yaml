@@ -43,11 +43,10 @@ jobs:
       - name: Restart docker and restore $GITHUB_WORKSPACE
         run: |
           sudo service docker restart
-          sudo rm -rf /home/runner/work
-          sudo mkdir -p /var/lib/docker/work
-          sudo ln -sf /var/lib/docker/work /home/runner/work
-          sudo mkdir -p $GITHUB_WORKSPACE
-          sudo chown -R $USER:$USER /home/runner/work
+          sudo mkdir -p /var/lib/docker/workspace
+          sudo rm -rf $GITHUB_WORKSPACE
+          sudo mount --bind /var/lib/docker/workspace $GITHUB_WORKSPACE
+          sudo chown -R $USER:$USER $GITHUB_WORKSPACE
 
       - name: Checkout
         uses: actions/checkout@v6
