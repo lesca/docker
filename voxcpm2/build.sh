@@ -25,6 +25,7 @@ pip install --no-cache-dir huggingface-hub
 
 # 下载模型
 if [ "$GITHUB_ACTIONS" == "true" ]; then
+    ln -sf $MODEL_DIR /var/lib/docker/models
     hf download OpenBMB/VoxCPM2 --local-dir $MODEL_DIR/OpenBMB/VoxCPM2
     modelscope download iic/SenseVoiceSmall --local-dir $MODEL_DIR/iic/SenseVoiceSmall
     modelscope download iic/speech_zipenhancer_ans_multiloss_16k_base --local-dir $MODEL_DIR/iic/speech_zipenhancer_ans_multiloss_16k_base

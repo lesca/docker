@@ -11,7 +11,6 @@ env:
   IMAGE_CONTEXT: ./voxcpm2
   REGISTRY_IMAGE: ${{ github.repository_owner }}/voxcpm2
   PROJECT_NAME: voxcpm2
-  ROOT_RESERVE_MB: 6144 # 6GB for home folder
 
 jobs:
   build-images:
@@ -32,7 +31,7 @@ jobs:
         uses: easimon/maximize-build-space@master
         with:
           build-mount-path: '/var/lib/docker/'
-          root-reserve-mb: ${{ env.ROOT_RESERVE_MB }}
+          root-reserve-mb: 512
           temp-reserve-mb: 32
           swap-size-mb: 32
           remove-dotnet: 'true'
