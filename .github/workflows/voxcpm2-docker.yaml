@@ -15,9 +15,6 @@ env:
 jobs:
   build-images:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: '/var/lib/docker/repo/'
     permissions:
       contents: read
       packages: write
@@ -43,8 +40,14 @@ jobs:
           remove-codeql: 'true'
           remove-docker-images: 'true'
 
-      - name: Restart docker
-        run: sudo service docker restart
+      - name: Restart docker and restore $GITHUB_WORKSPACE
+        run: |
+          sudo service docker restart
+          sudo rm -rf /home/runner/work
+          sudo mkdir -p /var/lib/docker/work
+          sudo ln -sf /var/lib/docker/work /home/runner/work
+          sudo mkdir -p $GITHUB_WORKSPACE
+          sudo chown -R $USER:$USER /home/runner/work
 
       - name: Checkout
         uses: actions/checkout@v6
