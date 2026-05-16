@@ -42,5 +42,5 @@ fi
 
 # 构建 arm64 镜像 (if not github actions)
 if [ -z "$GITHUB_ACTIONS" ]; then
-    docker buildx build --platform linux/arm64 -t lesca/${PROJECT_NAME}:latest -f $PROJECT_NAME/Dockerfile $PROJECT_NAME
+    docker buildx build --platform linux/arm64 -t lesca/${PROJECT_NAME}:latest -f $PROJECT_NAME/Dockerfile $PROJECT_NAME # --progress=plain
 fi

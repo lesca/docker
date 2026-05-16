@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM python:3.11-trixie AS builder
+FROM --platform=$BUILDPLATFORM python:3.11-trixie AS base
 
 # 安装系统依赖
 RUN sed -i 's/deb.debian.org/mirrors.bfsu.edu.cn/g' /etc/apt/sources.list.d/debian.sources
@@ -13,29 +13,29 @@ RUN apt-get update \
  libfst-dev \
  && rm -rf /var/lib/apt/lists/*
 
+### 构建阶段 ###
+FROM base AS builder
+
 # 复制项目
 COPY index-tts /app
 WORKDIR /app
+
+# 设置目标平台
+ARG TARGETPLATFORM
+ENV TARGETPLATFORM=$TARGETPLATFORM
 
 # 创建虚拟环境
 RUN python -m venv .venv
 ENV VIRTUAL_ENV=/app/.venv
 ENV PATH=$VIRTUAL_ENV/bin:$PATH
 
-# 安装 pip 和 uv
-RUN pip install --no-cache-dir -U pip \
- && pip install --no-cache-dir -U uv
-
 # 安装依赖
-RUN pip install --no-cache-dir torch torchaudio torchvision --index-url https://download.pytorch.org/whl/cpu;
-COPY pyproject.toml /app/pyproject.toml
-RUN uv sync --python $VIRTUAL_ENV/bin/python --extra "webui" --no-cache-dir --default-index "https://mirrors.aliyun.com/pypi/simple"
-
-# Patch (use wetext)
-RUN sed -i '121s/.*/        if True:/' indextts/utils/front.py
+COPY pyproject.toml /tmp/pyproject.toml
+COPY requirements.sh /tmp/requirements.sh
+RUN bash /tmp/requirements.sh
 
 ### 最终构建阶段 ###
-FROM --platform=$BUILDPLATFORM python:3.11-trixie AS runner
+FROM base AS runner
 
 # 安装系统依赖
 RUN sed -i 's/deb.debian.org/mirrors.bfsu.edu.cn/g' /etc/apt/sources.list.d/debian.sources
