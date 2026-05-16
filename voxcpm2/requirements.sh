@@ -18,13 +18,13 @@ fi
 # 安装 pip 和 uv
 pip install --no-cache-dir -U pip uv
 
+# 安装 PyTorch
+pip install --no-cache-dir torch torchaudio --index-url https://download.pytorch.org/whl/cu128;
+
 if [ "$TARGETPLATFORM" == "linux/arm64" ]; then
-    # 安装 PyTorch（CPU 版本以确保兼容性）
-    pip install --no-cache-dir torch torchaudio --index-url https://download.pytorch.org/whl/cpu;
-    pip install --no-cache-dir torchcodec;
-    sed -i '/torchcodec/d' pyproject.toml
+    echo "arm64";
 elif [ "$TARGETPLATFORM" == "linux/amd64" ]; then
-    pip install --no-cache-dir torch torchaudio;
+    echo "amd64";
 fi
 
 # 安装项目
