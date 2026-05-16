@@ -2,7 +2,7 @@
 # https://docs.docker.com/build/ci/github-actions/multi-platform/
 # https://docs.docker.com/build/ci/github-actions/push-multi-registries/
 
-name: docker-image-xray
+name: xray-docker
 concurrency: deploy-${{ github.workflow }}
 
 on: 
@@ -18,7 +18,7 @@ on:
 env:
   IMAGE_CONTEXT: ./xray
   REGISTRY_IMAGE: ${{ github.repository_owner }}/xray
-  BUILD_PLATFORMS: |
+  TARGET_PLATFORMS: |
     linux/amd64
     linux/386
     linux/arm64
@@ -110,7 +110,7 @@ jobs:
 
       # - name: docker pull without login
       #   run: |
-      #     for PLATFORM in $BUILD_PLATFORMS; do
+      #     for PLATFORM in $TARGET_PLATFORMS; do
       #       docker pull --platform=$PLATFORM golang:latest
       #       docker pull --platform=$PLATFORM alpine:latest
       #     done
@@ -138,7 +138,7 @@ jobs:
         id: build
         uses: docker/build-push-action@v6
         with:
-          platforms: ${{ env.BUILD_PLATFORMS }}
+          platforms: ${{ env.TARGET_PLATFORMS }}
           context: ${{ env.IMAGE_CONTEXT }}
           file: ${{ env.IMAGE_CONTEXT }}/Dockerfile
           labels: ${{ steps.meta.outputs.labels }}

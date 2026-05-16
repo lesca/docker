@@ -19,7 +19,7 @@ jobs:
       contents: read
       packages: write
     env:
-      BUILD_PLATFORMS: |
+      TARGET_PLATFORMS: |
         linux/arm64
     steps:
       - name: Prepare
@@ -80,7 +80,7 @@ jobs:
         id: build
         uses: docker/build-push-action@v6
         with:
-          platforms: ${{ env.BUILD_PLATFORMS }}
+          platforms: ${{ env.TARGET_PLATFORMS }}
           context: ${{ env.IMAGE_CONTEXT }}
           file: ${{ env.IMAGE_CONTEXT }}/Dockerfile
           tags: |

@@ -1,7 +1,7 @@
 # Reference: Multi-platform image with GitHub Actions
 # https://docs.docker.com/build/ci/github-actions/multi-platform/
 
-name: docker-image-xray-tproxy
+name: xray-tproxy-docker
 concurrency: deploy-${{ github.workflow }}
 
 on: 
@@ -56,7 +56,7 @@ jobs:
       contents: read 
       packages: write
     env:
-      BUILD_PLATFORMS: |
+      TARGET_PLATFORMS: |
         linux/amd64
         linux/386
         linux/arm64
@@ -100,7 +100,7 @@ jobs:
         id: build
         uses: docker/build-push-action@v6
         with:
-          platforms: ${{ env.BUILD_PLATFORMS }}
+          platforms: ${{ env.TARGET_PLATFORMS }}
           context: ${{ env.IMAGE_CONTEXT }}
           file: ${{ env.IMAGE_CONTEXT }}/Dockerfile
           tags: |

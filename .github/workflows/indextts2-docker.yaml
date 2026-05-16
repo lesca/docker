@@ -10,7 +10,6 @@ on:
 env:
   IMAGE_CONTEXT: ./indextts2
   REGISTRY_IMAGE: ${{ github.repository_owner }}/indextts2
-  PROJECT_NAME: indextts2
 
 jobs:
   build-images:
@@ -19,7 +18,7 @@ jobs:
       contents: read
       packages: write
     env:
-      BUILD_PLATFORMS: |
+      TARGET_PLATFORMS: |
         linux/arm64
     steps:
       - name: Prepare
@@ -52,10 +51,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: clone project
+      - name: Clone Project
         run: |
-          chmod +x ${{ env.PROJECT_NAME }}/build.sh
-          ./${{ env.PROJECT_NAME }}/build.sh
+          bash ${IMAGE_CONTEXT}/build.sh
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -80,7 +78,7 @@ jobs:
         id: build
         uses: docker/build-push-action@v6
         with:
-          platforms: ${{ env.BUILD_PLATFORMS }}
+          platforms: ${{ env.TARGET_PLATFORMS }}
           context: ${{ env.IMAGE_CONTEXT }}
           file: ${{ env.IMAGE_CONTEXT }}/Dockerfile
           tags: |
