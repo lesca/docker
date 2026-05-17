@@ -16,10 +16,10 @@ if [ -z "$GITHUB_ACTIONS" ]; then
 fi
 
 # 安装 pip 和 uv
-pip install --no-cache-dir -U pip uv
+pip install -U pip uv
 
 # 安装 PyTorch
-pip install --no-cache-dir torch torchaudio --index-url https://download.pytorch.org/whl/cu128;
+pip install torch torchaudio torchcodec --index-url https://download.pytorch.org/whl/cu128;
 
 if [ "$TARGETPLATFORM" == "linux/arm64" ]; then
     echo "arm64";
@@ -28,6 +28,9 @@ elif [ "$TARGETPLATFORM" == "linux/amd64" ]; then
 fi
 
 # 安装项目
-uv sync --no-cache-dir --python $VIRTUAL_ENV/bin/python
-pip install --no-cache-dir -e .
+uv sync --python $VIRTUAL_ENV/bin/python
+pip install -e .
 
+# 安装 nvidia 库
+# pip install nvidia-cuda-nvrtc-cu12 nvidia-cuda-runtime-cu12 nvidia-npp-cu12
+pip install nvidia-npp-cu12

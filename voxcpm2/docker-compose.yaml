@@ -6,6 +6,8 @@ services:
     container_name: voxcpm2
     image: lesca/voxcpm2:latest
     stop_signal: SIGINT
+    environment:
+      - LD_LIBRARY_PATH=/app/.venv/lib/python3.11/site-packages/nvidia/npp/lib
 
     ports:
       - "8808:8808"

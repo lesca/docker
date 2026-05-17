@@ -30,7 +30,8 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # 安装依赖
 COPY requirements.sh /tmp/requirements.sh
-RUN bash /tmp/requirements.sh
+RUN --mount=type=cache,target=/root/.cache/pip \
+    bash /tmp/requirements.sh
 
 ### 最终构建阶段 ###
 FROM base AS runner
