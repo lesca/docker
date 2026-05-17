@@ -21,6 +21,8 @@ COPY index-tts /app
 WORKDIR /app
 
 # 设置目标平台
+ARG TARGETARCH
+ARG TARGETVARIANT
 ARG TARGETPLATFORM
 ENV TARGETPLATFORM=$TARGETPLATFORM
 
@@ -32,7 +34,8 @@ ENV PATH=$VIRTUAL_ENV/bin:$PATH
 # 安装依赖
 COPY pyproject.toml /tmp/pyproject.toml
 COPY requirements.sh /tmp/requirements.sh
-RUN --mount=type=cache,target=/root/.cache/pip \
+RUN --mount=type=cache,id=pip-$TARGETARCH$TARGETVARIANT,sharing=locked,target=/root/.cache/pip \
+    --mount=type=cache,id=uv-$TARGETARCH$TARGETVARIANT,sharing=locked,target=/root/.cache/uv \
     bash /tmp/requirements.sh
 
 ### 最终构建阶段 ###
