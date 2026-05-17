@@ -16,12 +16,12 @@ if [ -z "$GITHUB_ACTIONS" ]; then
 fi
 
 # 安装 pip 和 uv
-pip install --no-cache-dir -U pip uv
+pip install -U pip uv
 
 # 安装依赖
 if [ "$TARGETPLATFORM" == "linux/arm64" ]; then
     cp /tmp/pyproject.toml /app/pyproject.toml
-    pip install --no-cache-dir torch torchaudio torchvision --index-url https://download.pytorch.org/whl/cpu;
+    pip install torch torchaudio torchvision --index-url https://download.pytorch.org/whl/cpu;
     uv sync --python $VIRTUAL_ENV/bin/python --extra "webui"
     # Patch (use wetext)
     sed -i '121s/.*/        if True:/' indextts/utils/front.py

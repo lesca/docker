@@ -14,5 +14,8 @@ export TORCH_NUM_THREADS="${TORCH_NUM_THREADS:-$(nproc)}"
 # Python 输出不缓冲
 export PYTHONUNBUFFERED=1
 
+# CUDA 库路径
+# export LD_LIBRARY_PATH="$VIRTUAL_ENV/lib/python3.11/site-packages/nvidia/npp/lib:$LD_LIBRARY_PATH"
+
 # 启动应用
 exec "$@"
