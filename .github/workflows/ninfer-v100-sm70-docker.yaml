@@ -22,11 +22,10 @@ jobs:
       contents: read 
       packages: write
     steps:
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY_IMAGE }}
+      - name: Prepare
+        run: |
+          echo "TODAY=$(date +'%Y%m%d')" >> $GITHUB_ENV
+          echo "TODAY: $TODAY"
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -65,7 +64,9 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           tags: |
             ${{ env.REGISTRY_IMAGE }}:latest
+            ${{ env.REGISTRY_IMAGE }}:${{ env.TODAY }}
             ghcr.io/${{ env.REGISTRY_IMAGE }}:latest
+            ghcr.io/${{ env.REGISTRY_IMAGE }}:${{ env.TODAY }}
           push: true
           build-args: |
             GITHUB_ACTIONS=true
