@@ -5,7 +5,7 @@ export VIRTUAL_ENV=".venv"
 
 # 克隆仓库
 if [ ! -d "$PROJECT_NAME/ninfer-v100-sm70" ]; then
-  git clone -b main --single-branch --depth 1 https://github.com/Flo5k5/ninfer-v100-sm70 $PROJECT_NAME/ninfer-v100-sm70
+  git clone -b master --single-branch --depth 1 https://github.com/Flo5k5/ninfer-v100-sm70 $PROJECT_NAME/ninfer-v100-sm70
 else
   git -C $PROJECT_NAME/ninfer-v100-sm70 pull --depth 1
 fi
