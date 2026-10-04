@@ -49,6 +49,11 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: clone project
+        run: |
+          chmod +x ${{ env.PROJECT_NAME }}/build.sh
+          ./${{ env.PROJECT_NAME }}/build.sh
+
       - name: Build images
         id: build
         uses: docker/build-push-action@v6
