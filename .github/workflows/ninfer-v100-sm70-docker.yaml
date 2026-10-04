@@ -10,6 +10,7 @@ on:
 
 env:
   IMAGE_CONTEXT: ./ninfer-v100-sm70
+  PROJECT_NAME: ninfer-v100-sm70
   REGISTRY_IMAGE: ${{ github.repository_owner }}/ninfer-v100-sm70
   TARGET_PLATFORMS: |
     linux/amd64
