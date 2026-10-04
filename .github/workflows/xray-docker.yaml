@@ -13,7 +13,8 @@ on:
       - xray/Dockerfile
   workflow_dispatch:
   schedule:
-    - cron: ' 0 21 * * 5'
+    - cron: '0 0 25 * *' # At 00:00 on day-of-month 25.
+    # - cron: ' 0 21 * * 5' # At 21:00 on Fridays.
 
 env:
   IMAGE_CONTEXT: ./xray
