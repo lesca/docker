@@ -68,4 +68,4 @@ jobs:
             ghcr.io/${{ env.REGISTRY_IMAGE }}:latest
           push: true
           build-args: |
-            GITHUB_ACTIONS=${{ env.GITHUB_ACTIONS }}
+            GITHUB_ACTIONS=true
