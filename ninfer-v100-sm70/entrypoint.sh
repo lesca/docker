@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export MODEL="${MODEL:-/models/qwen3_8_27b_nvfp4_v3.ninfer}"
+export MODEL="${MODEL:-/models/qwen3_8_27b_nvfp4.ninfer}"
 export PORT="${PORT:-18080}"
 export HOST="${HOST:-0.0.0.0}"
 export MAX_TOKENS="${MAX_TOKENS:-32768}"
