@@ -3,6 +3,7 @@
 export MODEL="${MODEL:-/models/qwen3_8_27b_nvfp4.ninfer}"
 export PORT="${PORT:-18080}"
 export HOST="${HOST:-0.0.0.0}"
+export REASONING_EFFORT="${REASONING_EFFORT:-xhigh}" # allow: low, medium, xhigh
 export MAX_TOKENS="${MAX_TOKENS:-32768}"
 export MAX_CONTEXT="${MAX_CONTEXT:-240000}"
 export MAX_CONCURRENCY="${MAX_CONCURRENCY:-1}"
@@ -25,6 +26,7 @@ else
     --spec mtp --draft-tokens 4 \
     --lm-head-draft \
     --preserve-thinking \
+    --default-reasoning-effort $REASONING_EFFORT \
     --vision \
     --port $PORT \
     --host $HOST \
