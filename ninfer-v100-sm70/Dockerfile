@@ -41,16 +41,14 @@ ARG DEBIAN_FRONTEND=noninteractive
 ARG GITHUB_ACTIONS
 
 COPY ubuntu.sources /tmp
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-
 RUN if [ -z "$GITHUB_ACTIONS" ]; then \
         cp /tmp/ubuntu.sources /etc/apt/sources.list.d/ubuntu.sources; \
-    fi && \
-    chmod +x /usr/local/bin/entrypoint.sh
+    fi
 
 RUN apt-get update \
     && apt-get install --yes --no-install-recommends \
         ca-certificates \
+        openssh-server \
         libavcodec60 \
         libavformat60 \
         libavutil58 \
@@ -58,8 +56,16 @@ RUN apt-get update \
         libswscale7 \
     && rm -rf /var/lib/apt/lists/*
 
+
 COPY --from=builder /build/apps/ninfer /usr/local/bin/ninfer
 COPY --from=builder /build/apps/ninfer-serve /usr/local/bin/ninfer-serve
+
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+
+# Process copied files
+RUN chmod +x /usr/local/bin/entrypoint.sh \
+  && mkdir -p /var/run/sshd \
+  && sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 
 WORKDIR /workspace
 EXPOSE 8080
