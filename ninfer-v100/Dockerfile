@@ -27,12 +27,14 @@ ARG PROJECT_REPO
 COPY $PROJECT_REPO /src
 WORKDIR /src
 
-RUN cmake -S . -B /build -G Ninja \
+RUN echo "Building for ${PROJECT_REPO}" && \
+    cmake -S . -B /build -G Ninja \
         -DCMAKE_CUDA_ARCHITECTURES=70 \
         -DCMAKE_BUILD_TYPE=Release \
         -DNINFER_BUILD_APPS=ON \
         -DBUILD_TESTING=OFF \
         -DNINFER_BUILD_BENCHMARKS=OFF \
+        -DFETCHCONTENT_SOURCE_DIR_CUTLASS=./cutlass-4.4.2 \
     && cmake --build /build --parallel --target ninfer ninfer-serve
 
 ### RUNNER ###
