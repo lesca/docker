@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM nvidia/cuda:12.9.2-cudnn-devel-ubuntu24.04 AS builder
+FROM --platform=$BUILDPLATFORM nvidia/cuda:12.8.1-devel-ubuntu24.04 AS builder
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG GITHUB_ACTIONS
@@ -23,7 +23,8 @@ RUN apt-get update \
         pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
-COPY ninfer-v100-sm70 /src
+ARG PROJECT_REPO
+COPY $PROJECT_REPO /src
 WORKDIR /src
 
 RUN cmake -S . -B /build -G Ninja \
@@ -35,7 +36,7 @@ RUN cmake -S . -B /build -G Ninja \
     && cmake --build /build --parallel --target ninfer ninfer-serve
 
 ### RUNNER ###
-FROM nvidia/cuda:12.9.2-runtime-ubuntu24.04 AS runner
+FROM nvidia/cuda:12.8.1-runtime-ubuntu24.04 AS runner
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG GITHUB_ACTIONS

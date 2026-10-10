@@ -2,16 +2,16 @@
 # https://docs.docker.com/build/ci/github-actions/multi-platform/
 # https://docs.docker.com/build/ci/github-actions/push-multi-registries/
 
-name: ninfer-v100-sm70-docker
+name: ninfer-v100-docker
 concurrency: deploy-${{ github.workflow }}
 
 on: 
   workflow_dispatch:
 
 env:
-  IMAGE_CONTEXT: ./ninfer-v100-sm70
-  PROJECT_NAME: ninfer-v100-sm70
-  REGISTRY_IMAGE: ${{ github.repository_owner }}/ninfer-v100-sm70
+  IMAGE_CONTEXT: ./ninfer-v100
+  PROJECT_NAME: ninfer-v100
+  REGISTRY_IMAGE: ${{ github.repository_owner }}/ninfer-v100
   TARGET_PLATFORMS: |
     linux/amd64
 
