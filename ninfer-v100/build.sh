@@ -19,6 +19,8 @@ if [ ! -d "$PROJECT_REPO_PATH" ]; then
   wget https://github.com/NVIDIA/cutlass/archive/refs/tags/v4.4.2.tar.gz -O cutlass-4.4.2.tar.gz
   tar xzf cutlass-4.4.2.tar.gz
   popd
+else
+  git -C $PROJECT_REPO_PATH pull
 fi
 
 # Build docker image

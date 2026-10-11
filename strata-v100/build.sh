@@ -21,6 +21,8 @@ if [ ! -d "$PROJECT_REPO_PATH" ]; then
   unzip -qq "llama.cpp.zip" -d third_party -x '*/tools/ui/*'
   mv "third_party/llama.cpp-$LLAMA_CPP_COMMIT" third_party/llama.cpp
   popd
+else
+  git -C $PROJECT_REPO_PATH pull
 fi
 
 # Build docker image
