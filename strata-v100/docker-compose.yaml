@@ -1,15 +1,15 @@
 services:
-  ninfer-v100:
-    container_name: ninfer-v100
-    image: lesca/ninfer-v100-sm70:latest
+  strata-v100:
+    container_name: strata-v100
+    image: lesca/strata-v100:latest
     stop_signal: SIGINT
     environment:
       - TZ=Asia/Shanghai
     volumes:
-      - /share/public/models/ninfer:/models
+      - /share/public/models/strata:/data
       # - ./entrypoint.sh:/usr/local/bin/entrypoint.sh
     ports:
-      - "18080:18080"
+      - "18080:8080"
     # command: sleep infinity
     # 启用特权模式或 GPU 支持（如果你的 Dockerfile 需要 NVIDIA CUDA 支持）
     deploy:
