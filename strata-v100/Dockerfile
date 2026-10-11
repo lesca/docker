@@ -78,7 +78,7 @@ RUN rm -rf build-cuda12 build-vision-cuda12 llama.cpp.zip
 ### RUNNER ###
 FROM nvidia/cuda:12.8.1-runtime-ubuntu24.04 AS runner
 
-ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 STRATA_EXECV=1 
+ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 STRATA_EXECV=1 PORT=18080
 ARG DEBIAN_FRONTEND=noninteractive
 ARG GITHUB_ACTIONS
 
@@ -104,16 +104,22 @@ RUN apt-get update \
 
 COPY --from=builder /opt/strata /opt/strata
 
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY entrypoint.sh /opt/entrypoint.sh
 
 # Process copied files
-RUN chmod +x /usr/local/bin/entrypoint.sh \
-  && mkdir -p /var/run/sshd \
+RUN mkdir -p /var/run/sshd \
   && sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 
 WORKDIR /opt/strata
-EXPOSE 8080
+EXPOSE ${PORT:-18080}
 
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+# /health is answered before the API key gate, so it works with or without one.
+# The port only opens after the model loads (1-3 minutes, longer on a first run),
+# so the start period is generous: a too short one marks a still-loading container
+# unhealthy and a restart policy would kill it mid-download.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=600s --retries=3 \
+  CMD curl -fs "http://127.0.0.1:${PORT:-18080}/health" || exit 1
+
+ENTRYPOINT ["bash", "/opt/entrypoint.sh"]
 
 

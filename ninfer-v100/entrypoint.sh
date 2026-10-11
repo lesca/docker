@@ -15,31 +15,40 @@ export DEVICE_STATE_SLOTS="${DEVICE_STATE_SLOTS:-$MAX_CONCURRENCY}"
 
 export NINFER_ARGS="${NINFER_ARGS:-}"
 
-echo "Use model: $MODEL  (C=$MAX_CONCURRENCY, ctx=$MAX_CONTEXT, K=$DRAFT_TOKENS)"
-
 # update root password
 export ROOT_PASSWD="${ROOT_PASSWD:-password}"
 echo "root:${ROOT_PASSWD}" | chpasswd
 
+# exec "$@"
 if [ -n "$1" ]; then
   exec "$@"
-else
-  ninfer-serve "$MODEL" \
-    --max-context $MAX_CONTEXT \
-    --prefill-chunk 2048 \
-    --kv-capacity auto \
-    --max-concurrency $MAX_CONCURRENCY \
-    --pending-timeout-ms $PENDING_TIMEOUT \
-    --kv-dtype int8 \
-    --device-state-slots $DEVICE_STATE_SLOTS \
-    --host-state-slots 8 \
-    --host-kv-mib 8192 \
-    --spec mtp --draft-tokens $DRAFT_TOKENS \
-    --lm-head-draft \
-    --preserve-thinking \
-    --vision \
-    --port $PORT \
-    --host $HOST \
-    --default-max-tokens $MAX_TOKENS \
-    $NINFER_ARGS
+  exit 0
 fi
+
+# start service
+echo "[INFO] Use model: $MODEL  (C=$MAX_CONCURRENCY, ctx=$MAX_CONTEXT, K=$DRAFT_TOKENS)"
+echo -n "Starting service in "
+for i in {3..1}; do
+    echo -n "$i "
+    sleep 1
+done
+echo "0! Starting now..."
+
+ninfer-serve "$MODEL" \
+  --max-context $MAX_CONTEXT \
+  --prefill-chunk 2048 \
+  --kv-capacity auto \
+  --max-concurrency $MAX_CONCURRENCY \
+  --pending-timeout-ms $PENDING_TIMEOUT \
+  --kv-dtype int8 \
+  --device-state-slots $DEVICE_STATE_SLOTS \
+  --host-state-slots 8 \
+  --host-kv-mib 8192 \
+  --spec mtp --draft-tokens $DRAFT_TOKENS \
+  --lm-head-draft \
+  --preserve-thinking \
+  --vision \
+  --port $PORT \
+  --host $HOST \
+  --default-max-tokens $MAX_TOKENS \
+  $NINFER_ARGS

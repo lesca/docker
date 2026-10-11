@@ -63,17 +63,14 @@ RUN apt-get update \
 COPY --from=builder /build/apps/ninfer /usr/local/bin/ninfer
 COPY --from=builder /build/apps/ninfer-serve /usr/local/bin/ninfer-serve
 
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY entrypoint.sh /opt/entrypoint.sh
 
 # Process copied files
-RUN chmod +x /usr/local/bin/entrypoint.sh \
-  && mkdir -p /var/run/sshd \
+RUN mkdir -p /var/run/sshd \
   && sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 
 WORKDIR /workspace
 EXPOSE 8080
 STOPSIGNAL SIGTERM
 
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-
-
+ENTRYPOINT ["bash", "/opt/entrypoint.sh"]
