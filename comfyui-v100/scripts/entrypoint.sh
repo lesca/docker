@@ -33,12 +33,11 @@ for dir in "${TARGET_DIRS[@]}"; do
         mkdir -p "$dir"
     fi
 
-    # 获取当前目录的所有者 UID 和 GID
+    # 获取当前目录的所有者 UID
     current_uid=$(stat -c '%u' "$dir" 2>/dev/null)
-    current_gid=$(stat -c '%g' "$dir" 2>/dev/null)
 
     # 如果所有者不匹配，则修改
-    if [ "$current_uid" != "$TARGET_UID" ] || [ "$current_gid" != "$TARGET_GID" ]; then
+    if [ "$current_uid" != "$TARGET_UID" ] ; then
         echo "[INFO] 权限不匹配，正在修改 chown -R "$TARGET_UID:$TARGET_GID" "$dir" ..."
         sudo chown -R "$TARGET_UID:$TARGET_GID" "$dir"
     fi
