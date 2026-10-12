@@ -1,0 +1,26 @@
+services:
+  comfyui-v100:
+    container_name: comfyui-v100
+    image: lesca/comfyui-v100:latest
+    stop_signal: SIGINT
+    environment:
+      - TZ=Asia/Shanghai
+    user: "1000:1001"
+    volumes:
+      - ./comfyui_data/models:/opt/comfyui/models
+      - ./comfyui_data/user:/opt/comfyui/user
+      - ./comfyui_data/input:/opt/comfyui/input
+      - ./comfyui_data/output:/opt/comfyui/output
+      - ./comfyui_data/custom_nodes:/opt/comfyui/custom_nodes
+      # - ./entrypoint.sh:/usr/local/bin/entrypoint.sh
+    ports:
+      - "8188:8188"
+    # command: sleep infinity
+    # 启用特权模式或 GPU 支持（如果你的 Dockerfile 需要 NVIDIA CUDA 支持）
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
