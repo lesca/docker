@@ -22,6 +22,8 @@ RUN apt-get update \
         python3-dev \
         python3-venv \
         unzip \
+        openssh-server \
+        iproute2 \
     && rm -rf /var/lib/apt/lists/*
 
 ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
@@ -33,6 +35,12 @@ ARG UV_LINK_MODE=copy
 ARG VIRTUAL_ENV=/src/comfyui/.venv
 ENV VIRTUAL_ENV=${VIRTUAL_ENV}
 ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
+
+### OpenSSH - for Agent Debug Only ###
+# start ssh: /usr/sbin/sshd -D
+RUN mkdir -p /var/run/sshd \
+  && sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config \
+  && echo "root:${ROOT_PASSWD:-password}" | chpasswd
 
 COPY src /src
 
@@ -83,7 +91,10 @@ RUN git clone https://github.com/yolain/Comfyui-Easy-Use.git \
   && git clone https://github.com/kijai/ComfyUI-KJNodes.git \
   && git clone https://github.com/kosinkadink/ComfyUI-VideoHelperSuite.git \
   && git clone https://github.com/rgthree/rgthree-comfy.git \
-  && git clone https://github.com/phazei/ComfyUI-Enhancement-Utils.git
+  && git clone https://github.com/phazei/ComfyUI-Enhancement-Utils.git \
+  && git clone https://github.com/Aljnk/ComfyUI-JNK-Tiny-Nodes.git \
+  && git clone https://github.com/Moooonet/ComfyUI-Align.git \
+  && git clone https://github.com/LAOGOU-666/Comfyui-Memory_Cleanup.git
 
 RUN --mount=type=cache,id=pip-$TARGETARCH-$TARGETVARIANT,sharing=locked,target=/root/.cache/pip \
     --mount=type=cache,id=uv-$TARGETARCH-$TARGETVARIANT,sharing=locked,target=/root/.cache/uv \
