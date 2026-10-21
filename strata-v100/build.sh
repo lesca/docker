@@ -1,16 +1,13 @@
 #!/bin/bash
 # 环境变量
 export PROJECT_NAME="strata-v100"
-export PROJECT_REPO=${1:-strata}
+export PROJECT_REPO=${PROJECT_REPO:-strata}
 export PROJECT_REPO_PATH="$PROJECT_NAME/$PROJECT_REPO"
-export VIRTUAL_ENV=".venv"
+export VERSION=${1:-"v0.1.44.1"}
 
 if [ "$PROJECT_REPO" == "strata" ]; then
   export GIT_REPO_URL="https://github.com/Niko1221/Strata"
-elif [ "$PROJECT_REPO" == "strata-v100" ]; then
-  export GIT_REPO_URL="https://github.com/jmnargi/Strata-V100"
 fi
-
 
 # 克隆仓库
 if [ ! -d "$PROJECT_REPO_PATH" ]; then
@@ -31,7 +28,9 @@ if [ -z "$GITHUB_ACTIONS" ]; then
     docker buildx build \
       --progress=plain \
       --build-arg PROJECT_REPO=$PROJECT_REPO \
+      --build-arg VERSION=$VERSION \
       --build-arg PIP_INDEX_URL=https://mirrors.bfsu.edu.cn/pypi/web/simple \
       -t "lesca/${PROJECT_NAME}:latest" \
+      -t "lesca/${PROJECT_NAME}:${VERSION}" \
       -f $PROJECT_NAME/Dockerfile $PROJECT_NAME
 fi

@@ -30,6 +30,9 @@ ARG PROJECT_REPO
 WORKDIR /opt/strata
 COPY $PROJECT_REPO /opt/strata
 
+ARG VERSION=${VERSION:-main}
+RUN git checkout $VERSION
+
 ARG PIP_INDEX_URL
 RUN python3 -m venv .venv \
   && .venv/bin/pip install --no-cache-dir --upgrade pip \

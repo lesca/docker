@@ -27,5 +27,6 @@ if [ -z "$GITHUB_ACTIONS" ]; then
       --build-arg VERSION=$VERSION \
       --build-arg HTTPS_PROXY=http://172.17.0.1:7070 \
       -t "lesca/${PROJECT_NAME}:latest" \
+      -t "lesca/${PROJECT_NAME}:${VERSION}" \
       -f $PROJECT_NAME/Dockerfile $PROJECT_NAME
 fi
