@@ -86,19 +86,32 @@ RUN mv native/*.so . \
 ### ComfyUI Custom Nodes ###
 WORKDIR /src/comfyui/custom_nodes
 
-RUN git clone https://github.com/yolain/Comfyui-Easy-Use.git \
-  && git clone https://github.com/r-vage/ComfyUI_Eclipse.git \
-  && git clone https://github.com/kijai/ComfyUI-KJNodes.git \
-  && git clone https://github.com/kosinkadink/ComfyUI-VideoHelperSuite.git \
-  && git clone https://github.com/rgthree/rgthree-comfy.git \
-  && git clone https://github.com/phazei/ComfyUI-Enhancement-Utils.git \
-  && git clone https://github.com/Aljnk/ComfyUI-JNK-Tiny-Nodes.git \
-  && git clone https://github.com/Moooonet/ComfyUI-Align.git \
-  && git clone https://github.com/LAOGOU-666/Comfyui-Memory_Cleanup.git
+RUN git clone --depth 1 https://github.com/yolain/Comfyui-Easy-Use.git \
+  && git clone --depth 1 https://github.com/r-vage/ComfyUI_Eclipse.git \
+  && git clone --depth 1 https://github.com/kijai/ComfyUI-KJNodes.git \
+  && git clone --depth 1 https://github.com/kosinkadink/ComfyUI-VideoHelperSuite.git \
+  && git clone --depth 1 https://github.com/rgthree/rgthree-comfy.git \
+  && git clone --depth 1 https://github.com/phazei/ComfyUI-Enhancement-Utils.git \
+  && git clone --depth 1 https://github.com/Moooonet/ComfyUI-Align.git \
+  && git clone --depth 1 https://github.com/LAOGOU-666/Comfyui-Memory_Cleanup.git \
+  && git clone --depth 1 https://github.com/lesca/comfyui-lesca-nodes.git
 
 RUN --mount=type=cache,id=pip-$TARGETARCH-$TARGETVARIANT,sharing=locked,target=/root/.cache/pip \
     --mount=type=cache,id=uv-$TARGETARCH-$TARGETVARIANT,sharing=locked,target=/root/.cache/uv \
   for f in $(find . -name "requirements.txt"); do echo "Installing requirements.txt: $f"; uv pip install -r "$f"; done
+
+# Install custom nodes dependencies
+RUN --mount=type=cache,id=pip-$TARGETARCH-$TARGETVARIANT,sharing=locked,target=/root/.cache/pip \
+    --mount=type=cache,id=uv-$TARGETARCH-$TARGETVARIANT,sharing=locked,target=/root/.cache/uv \
+  uv pip install \
+  # comfyui-eclipse
+  https://github.com/nunchux-ai/nunchaku/releases/download/v1.0.2/nunchaku-1.0.2+torch2.10-cp312-cp312-linux_x86_64.whl \
+  xFormers \
+  # ComfyUI-Enhancement-Utils
+  nvidia-ml-py \
+  # Manager
+  PyOpenGL-accelerate
+
 
 ### RUNNER ###
 FROM nvidia/cuda:12.9.2-runtime-ubuntu24.04 AS runner
