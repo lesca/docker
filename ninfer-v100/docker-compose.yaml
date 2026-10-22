@@ -10,6 +10,7 @@ services:
       # - ./entrypoint.sh:/usr/local/bin/entrypoint.sh
     ports:
       - "18080:18080"
+      - "18081:18081"
     # command: sleep infinity
     # 启用特权模式或 GPU 支持（如果你的 Dockerfile 需要 NVIDIA CUDA 支持）
     deploy:

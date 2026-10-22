@@ -52,6 +52,8 @@ RUN apt-get update \
     && apt-get install --yes --no-install-recommends \
         ca-certificates \
         openssh-server \
+        python3 \
+        curl \
         libavcodec60 \
         libavformat60 \
         libavutil58 \
@@ -63,14 +65,16 @@ RUN apt-get update \
 COPY --from=builder /build/apps/ninfer /usr/local/bin/ninfer
 COPY --from=builder /build/apps/ninfer-serve /usr/local/bin/ninfer-serve
 
-COPY entrypoint.sh /opt/entrypoint.sh
+COPY scripts /opt/scripts
 
 # Process copied files
 RUN mkdir -p /var/run/sshd \
   && sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 
 WORKDIR /workspace
-EXPOSE 8080
 STOPSIGNAL SIGTERM
 
-ENTRYPOINT ["bash", "/opt/entrypoint.sh"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=600s --retries=3 \
+  CMD curl -fs "http://127.0.0.1:${PORT:-18080}/health" || exit 1
+
+ENTRYPOINT ["bash", "/opt/scripts/entrypoint.sh"]
