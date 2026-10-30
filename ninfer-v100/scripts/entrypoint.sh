@@ -29,7 +29,7 @@ fi
 # Full service command line for hookd. Single quotes keep the variable
 # references literal; hookd executes it via `sh -c`, so they expand against
 # the exported environment above ($NINFER_ARGS passthrough preserved).
-export HOOKD_CMD='ninfer-serve "$MODEL" \
+export HOOKD_CMD="ninfer-serve '$MODEL' \
 --max-context $MAX_CONTEXT \
 --prefill-chunk 2048 \
 --kv-capacity auto \
@@ -47,7 +47,7 @@ export HOOKD_CMD='ninfer-serve "$MODEL" \
 --port $PORT \
 --host $HOST \
 --default-max-tokens $MAX_TOKENS \
-$NINFER_ARGS'
+$NINFER_ARGS"
 
 echo "[INFO] Use model: $MODEL  (C=$MAX_CONCURRENCY, ctx=$MAX_CONTEXT, K=$DRAFT_TOKENS)"
 echo "[INFO] hookd will launch the service; webhook on 0.0.0.0:${HOOKD_PORT:-18081}"

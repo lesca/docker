@@ -37,12 +37,12 @@ set -- --family "$FAMILY" \
       --vision "$VISION" \
       --data-dir "$STRATA_DATA" \
       --host "$HOST" \
-      --api-key "$API_KEY" \
       --port "$PORT" \
       --low-ram "$LOW_RAM" \
       $STRATA_ARGS
 
 # set additional arguments
+if [ -n "$API_KEY" ]; then set -- "$@" --api-key "$API_KEY"; fi
 if [ -n "$KV" ]; then set -- "$@" --kv "$KV"; fi
 if [ -n "$GPUS" ]; then set -- "$@" --gpus "$GPUS"; fi
 if [ -n "$GPU" ]; then set -- "$@" --gpu "$GPU"; fi
@@ -52,11 +52,6 @@ if [ -n "$RESIDENT_BUDGET_GIB" ]; then set -- "$@" --resident-budget-gib "$RESID
 if [ -n "$KV_STREAMING" ]; then set -- "$@" --kv-streaming "$KV_STREAMING"; fi
 
 
+export HOOKD_CMD="/opt/strata/.venv/bin/python setup.py --setup --yes $@"
 echo "[INFO] Starting service: $@"
-echo -n "Starting service in "
-for i in {3..1}; do
-    echo -n "$i "
-    sleep 1
-done
-echo "0! Starting now..."
-.venv/bin/python setup.py --setup --yes "$@"
+exec python3 /opt/scripts/hookd.py

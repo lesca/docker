@@ -10,6 +10,12 @@ services:
       # - ./entrypoint.sh:/usr/local/bin/entrypoint.sh
     ports:
       - "18080:8080"
+    healthcheck:
+          test: ["CMD-SHELL", "curl -fs http://127.0.0.1:8080/health || exit 1"]
+          interval: 30s
+          timeout: 5s
+          start_period: 600s
+          retries: 3
     # command: sleep infinity
     # 启用特权模式或 GPU 支持（如果你的 Dockerfile 需要 NVIDIA CUDA 支持）
     deploy:

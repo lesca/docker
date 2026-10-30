@@ -107,22 +107,14 @@ RUN apt-get update \
 
 COPY --from=builder /opt/strata /opt/strata
 
-COPY entrypoint.sh /opt/entrypoint.sh
+COPY scripts /opt/scripts
 
 # Process copied files
 RUN mkdir -p /var/run/sshd \
   && sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 
 WORKDIR /opt/strata
-EXPOSE ${PORT:-18080}
 
-# /health is answered before the API key gate, so it works with or without one.
-# The port only opens after the model loads (1-3 minutes, longer on a first run),
-# so the start period is generous: a too short one marks a still-loading container
-# unhealthy and a restart policy would kill it mid-download.
-HEALTHCHECK --interval=30s --timeout=5s --start-period=600s --retries=3 \
-  CMD curl -fs "http://127.0.0.1:${PORT:-18080}/health" || exit 1
-
-ENTRYPOINT ["bash", "/opt/entrypoint.sh"]
+ENTRYPOINT ["bash", "/opt/scripts/entrypoint.sh"]
 
 
